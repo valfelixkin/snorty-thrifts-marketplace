@@ -8,12 +8,13 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Slider } from '@/components/ui/slider';
+import { formatPrice } from '@/lib/utils';
 
 const Shop = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || '');
-  const [priceRange, setPriceRange] = useState([0, 1000]);
+  const [priceRange, setPriceRange] = useState([0, 150000]);
   const [sortBy, setSortBy] = useState('newest');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showFilters, setShowFilters] = useState(false);
@@ -21,12 +22,12 @@ const Shop = () => {
   const categories = ['Fashion', 'Electronics', 'Furniture', 'Books', 'Audio', 'Cameras', 'Collectibles', 'Home & Garden'];
   const conditions = ['New', 'Like New', 'Very Good', 'Good', 'Fair'];
 
-  // Mock products data
+  // Mock products data with KSH prices
   const allProducts = [
     {
       id: '1',
       name: 'Vintage Leather Jacket',
-      price: 89,
+      price: 11570,
       image: 'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400&h=400&fit=crop',
       seller: 'StyleMaven',
       rating: 4.8,
@@ -38,7 +39,7 @@ const Shop = () => {
     {
       id: '2',
       name: 'iPhone 13 Pro',
-      price: 699,
+      price: 89870,
       image: 'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=400&h=400&fit=crop',
       seller: 'TechHub',
       rating: 4.9,
@@ -50,7 +51,7 @@ const Shop = () => {
     {
       id: '3',
       name: 'Mid-Century Modern Chair',
-      price: 245,
+      price: 31850,
       image: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400&h=400&fit=crop',
       seller: 'HomeDesign',
       rating: 4.7,
@@ -62,7 +63,7 @@ const Shop = () => {
     {
       id: '4',
       name: 'Rare Vinyl Collection',
-      price: 156,
+      price: 20280,
       image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop',
       seller: 'MusicLover',
       rating: 5.0,
@@ -74,7 +75,7 @@ const Shop = () => {
     {
       id: '5',
       name: 'Canon EOS R6',
-      price: 1299,
+      price: 168870,
       image: 'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=400&h=400&fit=crop',
       seller: 'PhotoPro',
       rating: 4.8,
@@ -86,7 +87,7 @@ const Shop = () => {
     {
       id: '6',
       name: 'Nike Air Jordan 1',
-      price: 180,
+      price: 23400,
       image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=400&fit=crop',
       seller: 'SneakerHead',
       rating: 4.6,
@@ -260,13 +261,13 @@ const Shop = () => {
                 <Slider
                   value={priceRange}
                   onValueChange={setPriceRange}
-                  max={1000}
-                  step={10}
+                  max={150000}
+                  step={1000}
                   className="mb-2"
                 />
                 <div className="flex justify-between text-sm text-gray-600">
-                  <span>${priceRange[0]}</span>
-                  <span>${priceRange[1]}</span>
+                  <span>{formatPrice(priceRange[0])}</span>
+                  <span>{formatPrice(priceRange[1])}</span>
                 </div>
               </div>
 
@@ -316,7 +317,7 @@ const Shop = () => {
                         </p>
                         <div className="flex items-center justify-between mb-2">
                           <span className="text-2xl font-bold text-brand-red-600">
-                            ${product.price}
+                            {formatPrice(product.price)}
                           </span>
                           <div className="flex items-center space-x-1">
                             <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
@@ -347,7 +348,7 @@ const Shop = () => {
                                 {product.name}
                               </h3>
                               <span className="text-2xl font-bold text-brand-red-600">
-                                ${product.price}
+                                {formatPrice(product.price)}
                               </span>
                             </div>
                             <p className="text-gray-600 mb-2">{product.description}</p>

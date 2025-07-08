@@ -3,6 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/contexts/CartContext';
+import { formatPrice } from '@/lib/utils';
 
 const Checkout = () => {
   const { items, totalPrice } = useCart();
@@ -25,7 +26,7 @@ const Checkout = () => {
                 Payment processing will be integrated in the next version.
               </p>
               <div className="text-2xl font-bold text-brand-red-600 mb-6">
-                Total: ${(totalPrice * 1.08).toFixed(2)}
+                Total: {formatPrice(totalPrice * 1.08)}
               </div>
               <Button className="gradient-red text-white">
                 Complete Order (Demo)

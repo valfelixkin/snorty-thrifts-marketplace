@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import { ArrowLeft, Heart, Share2, Star, Shield, MessageCircle } from 'lucide-react';
@@ -6,17 +5,18 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useCart } from '@/contexts/CartContext';
 import { useToast } from '@/hooks/use-toast';
+import { formatPrice } from '@/lib/utils';
 
 const ProductDetail = () => {
   const { id } = useParams();
   const { addToCart } = useCart();
   const { toast } = useToast();
 
-  // Mock product data
+  // Mock product data with KSH prices
   const product = {
     id: id || '1',
     name: 'Vintage Leather Jacket',
-    price: 89,
+    price: 11570,
     images: [
       'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=600&h=600&fit=crop',
       'https://images.unsplash.com/photo-1544022613-e87ca75a784a?w=600&h=600&fit=crop',
@@ -135,7 +135,7 @@ const ProductDetail = () => {
                 </span>
               </div>
               <div className="text-4xl font-bold text-brand-red-600 mb-6">
-                ${product.price}
+                {formatPrice(product.price)}
               </div>
             </div>
 

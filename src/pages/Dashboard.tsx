@@ -4,13 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { Package, DollarSign, Eye, MessageCircle } from 'lucide-react';
+import { formatPrice } from '@/lib/utils';
 
 const Dashboard = () => {
   const { user } = useAuth();
 
   const stats = [
     { label: 'Items Listed', value: '12', icon: Package, color: 'text-blue-600' },
-    { label: 'Total Sales', value: '$1,234', icon: DollarSign, color: 'text-green-600' },
+    { label: 'Total Sales', value: formatPrice(160420), icon: DollarSign, color: 'text-green-600' },
     { label: 'Profile Views', value: '89', icon: Eye, color: 'text-purple-600' },
     { label: 'Messages', value: '5', icon: MessageCircle, color: 'text-orange-600' },
   ];

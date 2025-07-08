@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Shirt, Laptop, Sofa, Book, Headphones, Camera, Star, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { formatPrice } from '@/lib/utils';
 
 const Index = () => {
   const categories = [
@@ -19,7 +20,7 @@ const Index = () => {
     {
       id: '1',
       name: 'Vintage Leather Jacket',
-      price: 89,
+      price: 11570,
       image: 'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400&h=400&fit=crop',
       seller: 'StyleMaven',
       rating: 4.8,
@@ -28,7 +29,7 @@ const Index = () => {
     {
       id: '2',
       name: 'iPhone 13 Pro',
-      price: 699,
+      price: 89870,
       image: 'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=400&h=400&fit=crop',
       seller: 'TechHub',
       rating: 4.9,
@@ -37,7 +38,7 @@ const Index = () => {
     {
       id: '3',
       name: 'Mid-Century Modern Chair',
-      price: 245,
+      price: 31850,
       image: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400&h=400&fit=crop',
       seller: 'HomeDesign',
       rating: 4.7,
@@ -46,7 +47,7 @@ const Index = () => {
     {
       id: '4',
       name: 'Rare Vinyl Collection',
-      price: 156,
+      price: 20280,
       image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop',
       seller: 'MusicLover',
       rating: 5.0,
@@ -159,7 +160,7 @@ const Index = () => {
                     </h3>
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-2xl font-bold text-brand-red-600">
-                        ${product.price}
+                        {formatPrice(product.price)}
                       </span>
                       <div className="flex items-center space-x-1">
                         <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
