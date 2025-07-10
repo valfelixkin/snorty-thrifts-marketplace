@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 export interface CartItem {
   id: string;
-  name: string;
+  title: string;
   price: number;
   image: string;
   quantity: number;
@@ -16,6 +16,7 @@ interface CartContextType {
   removeFromCart: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
   clearCart: () => void;
+  getTotalPrice: () => number;
   totalItems: number;
   totalPrice: number;
 }
@@ -76,6 +77,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setItems([]);
   };
 
+  const getTotalPrice = () => {
+    return items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  };
+
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
   const totalPrice = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
@@ -86,6 +91,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       removeFromCart,
       updateQuantity,
       clearCart,
+      getTotalPrice,
       totalItems,
       totalPrice
     }}>

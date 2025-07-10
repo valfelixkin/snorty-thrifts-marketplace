@@ -71,12 +71,12 @@ export const useProducts = (categorySlug?: string, searchTerm?: string) => {
         title: item.title,
         description: item.description,
         price: item.price,
-        original_price: item.original_price,
+        original_price: null, // Set to null since column doesn't exist yet
         condition: item.condition,
         size: item.size,
         brand: item.brand,
         color: item.color,
-        images: Array.isArray(item.images) ? item.images : [],
+        images: [], // Set to empty array since column doesn't exist yet
         is_available: item.is_available,
         is_featured: item.is_featured,
         created_at: item.created_at,
@@ -131,12 +131,12 @@ export const useProduct = (id: string) => {
         title: data.title,
         description: data.description,
         price: data.price,
-        original_price: data.original_price,
+        original_price: null, // Set to null since column doesn't exist yet
         condition: data.condition,
         size: data.size,
         brand: data.brand,
         color: data.color,
-        images: Array.isArray(data.images) ? data.images : [],
+        images: [], // Set to empty array since column doesn't exist yet
         is_available: data.is_available,
         is_featured: data.is_featured,
         created_at: data.created_at,

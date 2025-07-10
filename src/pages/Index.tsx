@@ -10,8 +10,11 @@ import { formatPrice } from '@/lib/utils';
 import { ArrowRight, Heart, Star } from 'lucide-react';
 
 const Index = () => {
-  const { data: featuredProducts, isLoading: productsLoading } = useProducts(true);
+  const { data: featuredProducts, isLoading: productsLoading } = useProducts();
   const { data: categories, isLoading: categoriesLoading } = useCategories();
+
+  // Filter featured products
+  const featuredItems = featuredProducts?.filter(product => product.is_featured) || [];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -92,12 +95,12 @@ const Index = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {featuredProducts?.slice(0, 4).map((product) => (
+              {featuredItems?.slice(0, 4).map((product) => (
                 <Card key={product.id} className="group hover:shadow-lg transition-shadow">
                   <div className="relative">
                     <img
                       src={product.images[0] || '/placeholder.svg'}
-                      alt={product.name}
+                      alt={product.title}
                       className="w-full h-48 object-cover rounded-t-lg"
                     />
                     <Button
@@ -113,7 +116,7 @@ const Index = () => {
                   </div>
                   <CardContent className="p-4">
                     <h3 className="font-montserrat font-semibold text-brand-black mb-2 line-clamp-2">
-                      {product.name}
+                      {product.title}
                     </h3>
                     <p className="text-gray-600 text-sm mb-3 line-clamp-2">
                       {product.description}

@@ -24,7 +24,7 @@ const Shop = () => {
 
   // Filter and sort products
   const filteredProducts = products?.filter(product => {
-    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const matchesSearch = product.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          product.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || product.category?.id === selectedCategory;
     return matchesSearch && matchesCategory;
@@ -117,7 +117,7 @@ const Shop = () => {
                   <div className="relative">
                     <img
                       src={product.images[0] || '/placeholder.svg'}
-                      alt={product.name}
+                      alt={product.title}
                       className="w-full h-48 object-cover rounded-t-lg"
                     />
                     <Button
@@ -133,7 +133,7 @@ const Shop = () => {
                   </div>
                   <CardContent className="p-4">
                     <h3 className="font-montserrat font-semibold text-brand-black mb-2 line-clamp-2">
-                      {product.name}
+                      {product.title}
                     </h3>
                     <p className="text-gray-600 text-sm mb-3 line-clamp-2">
                       {product.description}
