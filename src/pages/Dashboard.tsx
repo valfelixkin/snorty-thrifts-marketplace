@@ -7,13 +7,13 @@ import { Package, DollarSign, Eye, MessageCircle } from 'lucide-react';
 import { formatPrice } from '@/lib/utils';
 
 const Dashboard = () => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
 
   const stats = [
-    { label: 'Items Listed', value: '12', icon: Package, color: 'text-blue-600' },
-    { label: 'Total Sales', value: formatPrice(160420), icon: DollarSign, color: 'text-green-600' },
-    { label: 'Profile Views', value: '89', icon: Eye, color: 'text-purple-600' },
-    { label: 'Messages', value: '5', icon: MessageCircle, color: 'text-orange-600' },
+    { label: 'Items Listed', value: '0', icon: Package, color: 'text-blue-600' },
+    { label: 'Total Sales', value: formatPrice(0), icon: DollarSign, color: 'text-green-600' },
+    { label: 'Profile Views', value: '0', icon: Eye, color: 'text-purple-600' },
+    { label: 'Messages', value: '0', icon: MessageCircle, color: 'text-orange-600' },
   ];
 
   return (
@@ -21,7 +21,7 @@ const Dashboard = () => {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
           <h1 className="text-3xl md:text-4xl font-montserrat font-bold text-brand-black mb-2">
-            Welcome back, {user?.name}!
+            Welcome back, {profile?.full_name || profile?.username || user?.email}!
           </h1>
           <p className="text-gray-600">
             Here's what's happening with your account

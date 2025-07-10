@@ -1,15 +1,21 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { User } from '@supabase/supabase-js';
 
-interface User {
+interface Profile {
   id: string;
-  name: string;
-  email: string;
-  avatar?: string;
+  full_name: string | null;
+  username: string | null;
+  avatar_url: string | null;
+  phone: string | null;
+  location: string | null;
+  bio: string | null;
 }
 
 interface AuthContextType {
   user: User | null;
+  profile: Profile | null;
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
@@ -28,35 +34,58 @@ export const useAuth = () => {
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is logged in on app start
-    const storedUser = localStorage.getItem('snorty-user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    setIsLoading(false);
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        fetchProfile(session.user.id);
+      }
+      setIsLoading(false);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        fetchProfile(session.user.id);
+      } else {
+        setProfile(null);
+      }
+      setIsLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
+
+  const fetchProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error) throw error;
+      setProfile(data);
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+    }
+  };
 
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // For demo purposes, accept any email/password combo
-      const mockUser: User = {
-        id: '1',
-        name: email.split('@')[0],
-        email: email,
-        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${email}`
-      };
-      
-      setUser(mockUser);
-      localStorage.setItem('snorty-user', JSON.stringify(mockUser));
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (error) throw error;
     } catch (error) {
-      throw new Error('Login failed');
+      throw new Error(error instanceof Error ? error.message : 'Login failed');
     } finally {
       setIsLoading(false);
     }
@@ -65,32 +94,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const register = async (name: string, email: string, password: string) => {
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const mockUser: User = {
-        id: Date.now().toString(),
-        name: name,
-        email: email,
-        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${email}`
-      };
-      
-      setUser(mockUser);
-      localStorage.setItem('snorty-user', JSON.stringify(mockUser));
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: name,
+          },
+        },
+      });
+      if (error) throw error;
     } catch (error) {
-      throw new Error('Registration failed');
+      throw new Error(error instanceof Error ? error.message : 'Registration failed');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('snorty-user');
+  const logout = async () => {
+    await supabase.auth.signOut();
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, isLoading }}>
+    <AuthContext.Provider value={{ user, profile, login, register, logout, isLoading }}>
       {children}
     </AuthContext.Provider>
   );
