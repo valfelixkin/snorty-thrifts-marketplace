@@ -4,14 +4,14 @@ import { supabase } from '@/integrations/supabase/client';
 
 export interface Product {
   id: string;
-  name: string;
+  title: string;
   description: string;
   price: number;
-  original_price: number | null;
+  original_price?: number;
   condition: string;
-  size: string | null;
-  brand: string | null;
-  color: string | null;
+  size?: string;
+  brand?: string;
+  color?: string;
   images: string[];
   is_available: boolean;
   is_featured: boolean;
@@ -19,89 +19,116 @@ export interface Product {
   category: {
     id: string;
     name: string;
-  } | null;
+    slug: string;
+  };
   seller: {
     id: string;
-    full_name: string | null;
-    username: string | null;
-  } | null;
+    full_name: string;
+    username: string;
+  };
 }
 
-export const useProducts = (featured?: boolean) => {
+export const useProducts = (categorySlug?: string, searchTerm?: string) => {
   return useQuery({
-    queryKey: ['products', featured],
+    queryKey: ['items', categorySlug, searchTerm],
     queryFn: async () => {
       let query = supabase
-        .from('products')
+        .from('items')
         .select(`
           *,
-          categories:category_id (
+          categories (
             id,
-            name
+            name,
+            slug
           ),
-          profiles:seller_id (
+          profiles (
             id,
-            full_name,
+            first_name,
+            last_name,
             username
           )
         `)
         .eq('is_available', true);
 
-      if (featured) {
-        query = query.eq('is_featured', true);
+      if (categorySlug) {
+        query = query.eq('categories.slug', categorySlug);
       }
 
-      const { data, error } = await query.order('created_at', { ascending: false });
+      if (searchTerm) {
+        query = query.or(`title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`);
+      }
 
-      if (error) throw error;
+      const { data, error } = await query;
 
-      return data.map(product => ({
-        id: product.id,
-        name: product.name,
-        description: product.description,
-        price: product.price,
-        original_price: product.original_price,
-        condition: product.condition,
-        size: product.size,
-        brand: product.brand,
-        color: product.color,
-        images: product.images || [],
-        is_available: product.is_available,
-        is_featured: product.is_featured,
-        created_at: product.created_at,
-        category: product.categories,
-        seller: product.profiles,
-      })) as Product[];
+      if (error) {
+        console.error('Error fetching products:', error);
+        throw error;
+      }
+
+      // Transform the data to match our Product interface
+      const transformedData = data?.map(item => ({
+        id: item.id,
+        title: item.title,
+        description: item.description,
+        price: item.price,
+        original_price: item.original_price,
+        condition: item.condition,
+        size: item.size,
+        brand: item.brand,
+        color: item.color,
+        images: Array.isArray(item.images) ? item.images : [],
+        is_available: item.is_available,
+        is_featured: item.is_featured,
+        created_at: item.created_at,
+        category: {
+          id: item.categories?.id || '',
+          name: item.categories?.name || '',
+          slug: item.categories?.slug || ''
+        },
+        seller: {
+          id: item.profiles?.id || '',
+          full_name: `${item.profiles?.first_name || ''} ${item.profiles?.last_name || ''}`.trim() || item.profiles?.username || '',
+          username: item.profiles?.username || ''
+        }
+      })) || [];
+
+      return transformedData as Product[];
     },
   });
 };
 
 export const useProduct = (id: string) => {
   return useQuery({
-    queryKey: ['product', id],
+    queryKey: ['item', id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('products')
+        .from('items')
         .select(`
           *,
-          categories:category_id (
+          categories (
             id,
-            name
+            name,
+            slug
           ),
-          profiles:seller_id (
+          profiles (
             id,
-            full_name,
+            first_name,
+            last_name,
             username
           )
         `)
         .eq('id', id)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching product:', error);
+        throw error;
+      }
 
-      return {
+      // Transform the data to match our Product interface
+      const transformedData = {
         id: data.id,
-        name: data.name,
+        title: data.title,
         description: data.description,
         price: data.price,
         original_price: data.original_price,
@@ -109,14 +136,23 @@ export const useProduct = (id: string) => {
         size: data.size,
         brand: data.brand,
         color: data.color,
-        images: data.images || [],
+        images: Array.isArray(data.images) ? data.images : [],
         is_available: data.is_available,
         is_featured: data.is_featured,
         created_at: data.created_at,
-        category: data.categories,
-        seller: data.profiles,
-      } as Product;
+        category: {
+          id: data.categories?.id || '',
+          name: data.categories?.name || '',
+          slug: data.categories?.slug || ''
+        },
+        seller: {
+          id: data.profiles?.id || '',
+          full_name: `${data.profiles?.first_name || ''} ${data.profiles?.last_name || ''}`.trim() || data.profiles?.username || '',
+          username: data.profiles?.username || ''
+        }
+      };
+
+      return transformedData as Product;
     },
-    enabled: !!id,
   });
 };

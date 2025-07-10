@@ -17,7 +17,7 @@ import {
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const { user, logout } = useAuth();
+  const { user, profile, signOut } = useAuth();
   const { totalItems } = useCart();
   const navigate = useNavigate();
 
@@ -85,8 +85,8 @@ const Navbar = () => {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative p-1">
                     <img
-                      src={user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`}
-                      alt={user.name}
+                      src={profile?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`}
+                      alt={profile?.full_name || user.email || 'User'}
                       className="w-8 h-8 rounded-full"
                     />
                   </Button>
@@ -105,7 +105,7 @@ const Navbar = () => {
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={logout} className="cursor-pointer text-red-600">
+                  <DropdownMenuItem onClick={signOut} className="cursor-pointer text-red-600">
                     Logout
                   </DropdownMenuItem>
                 </DropdownMenuContent>

@@ -5,8 +5,9 @@ import { supabase } from '@/integrations/supabase/client';
 export interface Category {
   id: string;
   name: string;
-  description: string | null;
-  image_url: string | null;
+  slug: string;
+  description?: string;
+  image_url?: string;
 }
 
 export const useCategories = () => {
@@ -18,7 +19,11 @@ export const useCategories = () => {
         .select('*')
         .order('name');
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching categories:', error);
+        throw error;
+      }
+
       return data as Category[];
     },
   });

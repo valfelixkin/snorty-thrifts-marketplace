@@ -1,50 +1,39 @@
 
-import React, { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import React from 'react';
+import { useParams } from 'react-router-dom';
+import { Heart, Share2, ShoppingCart, User, MapPin, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { useProduct } from '@/hooks/useProducts';
 import { useCart } from '@/contexts/CartContext';
+import { useToast } from '@/hooks/use-toast';
 import { formatPrice } from '@/lib/utils';
-import { Heart, Share2, ShoppingCart, Star, ArrowLeft, User, MapPin, Calendar } from 'lucide-react';
-import { toast } from 'sonner';
+import PaymentButton from '@/components/PaymentButton';
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const { data: product, isLoading } = useProduct(id!);
+  const { data: product, isLoading, error } = useProduct(id!);
   const { addToCart } = useCart();
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const { toast } = useToast();
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded w-32 mb-8"></div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-              <div className="h-96 bg-gray-200 rounded-lg"></div>
-              <div className="space-y-4">
-                <div className="h-8 bg-gray-200 rounded w-3/4"></div>
-                <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                <div className="h-6 bg-gray-200 rounded w-1/4"></div>
-              </div>
-            </div>
-          </div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-red-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading product...</p>
         </div>
       </div>
     );
   }
 
-  if (!product) {
+  if (error || !product) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-2xl font-bold text-brand-black mb-4">Product not found</h1>
-          <Button asChild>
-            <Link to="/shop">Back to Shop</Link>
-          </Button>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Product not found</h2>
+          <p className="text-gray-600">The product you're looking for doesn't exist.</p>
         </div>
       </div>
     );
@@ -53,50 +42,64 @@ const ProductDetail = () => {
   const handleAddToCart = () => {
     addToCart({
       id: product.id,
-      name: product.name,
+      title: product.title,
       price: product.price,
       image: product.images[0] || '/placeholder.svg',
-      seller: product.seller?.username || 'Anonymous'
+      seller: product.seller.full_name
     });
-    toast.success('Added to cart!');
+    
+    toast({
+      title: "Added to cart",
+      description: `${product.title} has been added to your cart.`,
+    });
+  };
+
+  const handleShare = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: product.title,
+        text: product.description,
+        url: window.location.href,
+      });
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+      toast({
+        title: "Link copied",
+        description: "Product link has been copied to your clipboard.",
+      });
+    }
+  };
+
+  const handlePaymentSuccess = () => {
+    toast({
+      title: "Payment Successful!",
+      description: "Your order has been processed successfully.",
+    });
   };
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <Button asChild variant="ghost" className="mb-6">
-          <Link to="/shop" className="flex items-center gap-2">
-            <ArrowLeft className="w-4 h-4" />
-            Back to Shop
-          </Link>
-        </Button>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Product Images */}
           <div className="space-y-4">
             <div className="aspect-square rounded-lg overflow-hidden bg-white">
               <img
-                src={product.images[selectedImageIndex] || '/placeholder.svg'}
-                alt={product.name}
+                src={product.images[0] || '/placeholder.svg'}
+                alt={product.title}
                 className="w-full h-full object-cover"
               />
             </div>
             {product.images.length > 1 && (
-              <div className="flex gap-2 overflow-x-auto">
-                {product.images.map((image, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setSelectedImageIndex(index)}
-                    className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 ${
-                      selectedImageIndex === index ? 'border-brand-red-600' : 'border-gray-200'
-                    }`}
-                  >
+              <div className="grid grid-cols-4 gap-4">
+                {product.images.slice(1, 5).map((image, index) => (
+                  <div key={index} className="aspect-square rounded-lg overflow-hidden bg-white">
                     <img
                       src={image}
-                      alt={`${product.name} ${index + 1}`}
+                      alt={`${product.title} ${index + 2}`}
                       className="w-full h-full object-cover"
                     />
-                  </button>
+                  </div>
                 ))}
               </div>
             )}
@@ -105,117 +108,113 @@ const ProductDetail = () => {
           {/* Product Info */}
           <div className="space-y-6">
             <div>
-              <Badge className="mb-2 bg-brand-red-600">{product.condition}</Badge>
-              <h1 className="text-3xl font-montserrat font-bold text-brand-black mb-2">
-                {product.name}
+              <div className="flex items-center justify-between mb-2">
+                <Badge variant="secondary">{product.category.name}</Badge>
+                <Button variant="ghost" size="sm" onClick={handleShare}>
+                  <Share2 className="w-4 h-4" />
+                </Button>
+              </div>
+              <h1 className="text-3xl font-montserrat font-bold text-brand-black mb-4">
+                {product.title}
               </h1>
-              <div className="flex items-center gap-2 mb-4">
-                <div className="flex items-center gap-1">
-                  <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                  <span className="text-sm">4.5</span>
-                </div>
-                <span className="text-gray-400">•</span>
-                <span className="text-sm text-gray-600">32 reviews</span>
+              <div className="flex items-center space-x-4 mb-4">
+                <span className="text-3xl font-bold text-brand-red-600">
+                  {formatPrice(product.price)}
+                </span>
+                {product.original_price && (
+                  <span className="text-xl text-gray-500 line-through">
+                    {formatPrice(product.original_price)}
+                  </span>
+                )}
               </div>
             </div>
 
-            <div className="flex items-center gap-4">
-              <span className="text-3xl font-bold text-brand-red-600">
-                {formatPrice(product.price)}
-              </span>
-              {product.original_price && (
-                <span className="text-xl text-gray-400 line-through">
-                  {formatPrice(product.original_price)}
-                </span>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              {product.condition && (
+                <div>
+                  <span className="font-medium text-gray-600">Condition:</span>
+                  <p className="capitalize">{product.condition}</p>
+                </div>
+              )}
+              {product.size && (
+                <div>
+                  <span className="font-medium text-gray-600">Size:</span>
+                  <p>{product.size}</p>
+                </div>
+              )}
+              {product.brand && (
+                <div>
+                  <span className="font-medium text-gray-600">Brand:</span>
+                  <p>{product.brand}</p>
+                </div>
+              )}
+              {product.color && (
+                <div>
+                  <span className="font-medium text-gray-600">Color:</span>
+                  <p className="capitalize">{product.color}</p>
+                </div>
               )}
             </div>
 
-            <p className="text-gray-600 leading-relaxed">
-              {product.description}
-            </p>
-
-            {/* Product Details */}
-            <Card>
-              <CardContent className="p-4">
-                <h3 className="font-montserrat font-semibold mb-3">Product Details</h3>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  {product.brand && (
-                    <div>
-                      <span className="text-gray-500">Brand:</span>
-                      <span className="ml-2 font-medium">{product.brand}</span>
-                    </div>
-                  )}
-                  {product.size && (
-                    <div>
-                      <span className="text-gray-500">Size:</span>
-                      <span className="ml-2 font-medium">{product.size}</span>
-                    </div>
-                  )}
-                  {product.color && (
-                    <div>
-                      <span className="text-gray-500">Color:</span>
-                      <span className="ml-2 font-medium">{product.color}</span>
-                    </div>
-                  )}
-                  <div>
-                    <span className="text-gray-500">Condition:</span>
-                    <span className="ml-2 font-medium capitalize">{product.condition}</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <div>
+              <h3 className="font-montserrat font-semibold text-lg mb-2">Description</h3>
+              <p className="text-gray-700 leading-relaxed">{product.description}</p>
+            </div>
 
             {/* Seller Info */}
             <Card>
               <CardContent className="p-4">
-                <h3 className="font-montserrat font-semibold mb-3">Seller Information</h3>
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 bg-brand-red-100 rounded-full flex items-center justify-center">
-                    <User className="w-5 h-5 text-brand-red-600" />
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
+                    <User className="w-6 h-6 text-gray-600" />
                   </div>
                   <div>
-                    <p className="font-medium">{product.seller?.full_name || product.seller?.username || 'Anonymous'}</p>
-                    <div className="flex items-center gap-1 text-sm text-gray-500">
-                      <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                      <span>4.8 (124 reviews)</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4 text-sm text-gray-500">
-                  <div className="flex items-center gap-1">
-                    <MapPin className="w-3 h-3" />
-                    <span>Nairobi, Kenya</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Calendar className="w-3 h-3" />
-                    <span>Member since 2023</span>
+                    <h4 className="font-medium">{product.seller.full_name}</h4>
+                    <p className="text-sm text-gray-600">@{product.seller.username}</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
             {/* Action Buttons */}
-            <div className="flex gap-4">
-              <Button
-                onClick={handleAddToCart}
-                className="flex-1 gradient-red text-white"
-                size="lg"
-              >
-                <ShoppingCart className="w-4 h-4 mr-2" />
-                Add to Cart
-              </Button>
-              <Button variant="outline" size="lg">
-                <Heart className="w-4 h-4" />
-              </Button>
-              <Button variant="outline" size="lg">
-                <Share2 className="w-4 h-4" />
-              </Button>
+            <div className="space-y-4">
+              <PaymentButton 
+                amount={product.price}
+                itemTitle={product.title}
+                onPaymentSuccess={handlePaymentSuccess}
+              />
+              
+              <div className="grid grid-cols-2 gap-4">
+                <Button 
+                  variant="outline" 
+                  size="lg" 
+                  onClick={handleAddToCart}
+                  className="font-montserrat font-semibold"
+                >
+                  <ShoppingCart className="w-5 h-5 mr-2" />
+                  Add to Cart
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="lg"
+                  className="font-montserrat font-semibold"
+                >
+                  <Heart className="w-5 h-5 mr-2" />
+                  Save
+                </Button>
+              </div>
             </div>
 
-            <div className="text-sm text-gray-500">
-              <p>• Free shipping within Nairobi</p>
-              <p>• 30-day return policy</p>
-              <p>• Secure payment guaranteed</p>
+            {/* Additional Info */}
+            <div className="text-sm text-gray-600 space-y-1">
+              <div className="flex items-center space-x-2">
+                <Calendar className="w-4 h-4" />
+                <span>Listed {new Date(product.created_at).toLocaleDateString()}</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <MapPin className="w-4 h-4" />
+                <span>Nairobi, Kenya</span>
+              </div>
             </div>
           </div>
         </div>
