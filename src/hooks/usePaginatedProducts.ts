@@ -1,0 +1,158 @@
+
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { Product } from '@/types';
+
+interface UsePaginatedProductsParams {
+  page?: number;
+  pageSize?: number;
+  categoryId?: string;
+  searchTerm?: string;
+  sortBy?: string;
+  priceRange?: [number, number];
+  condition?: string;
+  brand?: string;
+}
+
+export const usePaginatedProducts = ({
+  page = 1,
+  pageSize = 12,
+  categoryId,
+  searchTerm,
+  sortBy = 'newest',
+  priceRange,
+  condition,
+  brand
+}: UsePaginatedProductsParams = {}) => {
+  return useQuery({
+    queryKey: ['paginated-items', page, pageSize, categoryId, searchTerm, sortBy, priceRange, condition, brand],
+    queryFn: async () => {
+      try {
+        let query = supabase
+          .from('items')
+          .select(`
+            *,
+            categories (
+              id,
+              name,
+              slug
+            ),
+            profiles (
+              id,
+              first_name,
+              last_name,
+              username
+            ),
+            item_images (
+              image_url,
+              is_primary
+            )
+          `, { count: 'exact' })
+          .eq('is_available', true);
+
+        // Apply filters
+        if (categoryId && categoryId !== 'all') {
+          query = query.eq('category_id', categoryId);
+        }
+
+        if (searchTerm) {
+          query = query.or(`title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`);
+        }
+
+        if (condition) {
+          query = query.eq('condition', condition);
+        }
+
+        if (brand) {
+          query = query.eq('brand', brand);
+        }
+
+        if (priceRange) {
+          query = query.gte('price', priceRange[0]).lte('price', priceRange[1]);
+        }
+
+        // Apply sorting
+        switch (sortBy) {
+          case 'price-low':
+            query = query.order('price', { ascending: true });
+            break;
+          case 'price-high':
+            query = query.order('price', { ascending: false });
+            break;
+          case 'oldest':
+            query = query.order('created_at', { ascending: true });
+            break;
+          default: // newest
+            query = query.order('created_at', { ascending: false });
+            break;
+        }
+
+        // Apply pagination
+        const from = (page - 1) * pageSize;
+        const to = from + pageSize - 1;
+        query = query.range(from, to);
+
+        const { data, error, count } = await query;
+
+        if (error) {
+          console.error('Error fetching products:', error);
+          throw error;
+        }
+
+        // Transform the data
+        const transformedData = data?.map(item => {
+          const images = item.item_images?.length > 0 
+            ? item.item_images.map((img: any) => img.image_url)
+            : ['/placeholder.svg'];
+
+          return {
+            id: item.id,
+            title: item.title || 'Untitled Item',
+            description: item.description || '',
+            price: Number(item.price) || 0,
+            original_price: null,
+            condition: item.condition || 'good',
+            size: item.size || null,
+            brand: item.brand || null,
+            color: item.color || null,
+            images,
+            is_available: Boolean(item.is_available),
+            is_featured: Boolean(item.is_featured),
+            created_at: item.created_at || new Date().toISOString(),
+            category: {
+              id: item.categories?.id || '',
+              name: item.categories?.name || 'Uncategorized',
+              slug: item.categories?.slug || 'uncategorized'
+            },
+            seller: {
+              id: item.profiles?.id || '',
+              full_name: `${item.profiles?.first_name || ''} ${item.profiles?.last_name || ''}`.trim() || item.profiles?.username || 'Unknown Seller',
+              username: item.profiles?.username || 'unknown'
+            }
+          } as Product;
+        }) || [];
+
+        return {
+          products: transformedData,
+          totalCount: count || 0,
+          totalPages: Math.ceil((count || 0) / pageSize),
+          currentPage: page,
+          hasNextPage: page < Math.ceil((count || 0) / pageSize),
+          hasPreviousPage: page > 1
+        };
+      } catch (error) {
+        console.error('Products fetch error:', error);
+        return {
+          products: [],
+          totalCount: 0,
+          totalPages: 0,
+          currentPage: 1,
+          hasNextPage: false,
+          hasPreviousPage: false
+        };
+      }
+    },
+    staleTime: 5 * 60 * 1000,
+    retry: 3,
+  });
+};
