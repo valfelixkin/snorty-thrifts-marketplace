@@ -53,14 +53,14 @@ const Cart = () => {
                   <div className="flex gap-6">
                     <img
                       src={item.image}
-                      alt={item.name}
+                      alt={item.title}
                       className="w-24 h-24 object-cover rounded-lg flex-shrink-0"
                     />
                     <div className="flex-1">
                       <div className="flex justify-between items-start mb-2">
                         <div>
                           <h3 className="font-montserrat font-semibold text-brand-black text-lg">
-                            {item.name}
+                            {item.title}
                           </h3>
                           <p className="text-sm text-gray-500">by {item.seller}</p>
                         </div>
