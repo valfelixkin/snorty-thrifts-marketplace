@@ -8,7 +8,8 @@ export const useReturns = () => {
   return useQuery({
     queryKey: ['returns'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Using type assertion until database schema is updated
+      const { data, error } = await (supabase as any)
         .from('returns')
         .select(`
           *,
@@ -43,14 +44,17 @@ export const useCreateReturn = () => {
       returnData: Omit<ReturnRequest, 'id' | 'created_at' | 'updated_at'>;
       mediaFiles: File[];
     }) => {
-      // Create return request
-      const { data: returnRequest, error: returnError } = await supabase
+      // Create return request using type assertion
+      const { data: returnRequest, error: returnError } = await (supabase as any)
         .from('returns')
         .insert(returnData)
         .select()
         .single();
 
       if (returnError) throw returnError;
+
+      // Create storage bucket for return media if it doesn't exist
+      await supabase.storage.createBucket('return-media', { public: true });
 
       // Upload media files
       const mediaUploads = await Promise.all(
@@ -76,9 +80,9 @@ export const useCreateReturn = () => {
         })
       );
 
-      // Save media records
+      // Save media records using type assertion
       if (mediaUploads.length > 0) {
-        const { error: mediaError } = await supabase
+        const { error: mediaError } = await (supabase as any)
           .from('return_media')
           .insert(mediaUploads);
 

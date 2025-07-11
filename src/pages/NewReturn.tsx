@@ -62,11 +62,14 @@ const NewReturn = () => {
       return;
     }
 
+    // Include status and all required fields for the return request
     createReturn.mutate({
       returnData: {
         ...formData,
         user_id: user.id,
-        order_id: formData.order_id || null
+        order_id: formData.order_id || null,
+        status: 'pending' as const,
+        refund_amount: null
       },
       mediaFiles
     }, {

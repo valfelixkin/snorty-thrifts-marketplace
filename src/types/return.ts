@@ -1,13 +1,13 @@
 
 export interface ReturnRequest {
   id: string;
-  order_id: string;
+  order_id: string | null;
   item_id: string;
   user_id: string;
   reason: string;
   description?: string;
   status: 'pending' | 'approved' | 'denied' | 'processed';
-  refund_amount?: number;
+  refund_amount?: number | null;
   created_at: string;
   updated_at: string;
 }
