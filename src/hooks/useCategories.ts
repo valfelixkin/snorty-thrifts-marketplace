@@ -14,17 +14,24 @@ export const useCategories = () => {
   return useQuery({
     queryKey: ['categories'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('categories')
-        .select('*')
-        .order('name');
+      try {
+        const { data, error } = await supabase
+          .from('categories')
+          .select('*')
+          .order('name');
 
-      if (error) {
-        console.error('Error fetching categories:', error);
-        throw error;
+        if (error) {
+          console.error('Error fetching categories:', error);
+          throw error;
+        }
+
+        return (data || []) as Category[];
+      } catch (error) {
+        console.error('Categories fetch error:', error);
+        return [];
       }
-
-      return data as Category[];
     },
+    staleTime: 10 * 60 * 1000, // 10 minutes - categories don't change often
+    retry: 3,
   });
 };
