@@ -19,3 +19,10 @@ export interface ReturnMedia {
   media_type: 'image' | 'video';
   created_at: string;
 }
+
+export interface ReturnFormData {
+  item_id: string;
+  order_id: string;
+  reason: string;
+  description: string;
+}
