@@ -52,13 +52,19 @@ export const useProducts = (categorySlug?: string, searchTerm?: string) => {
             ? item.item_images.map((img: any) => img.image_url)
             : ['/placeholder.svg'];
 
+          // Helper function to safely cast condition
+          const getCondition = (condition: any): 'new' | 'like_new' | 'good' | 'fair' | 'poor' => {
+            const validConditions = ['new', 'like_new', 'good', 'fair', 'poor'] as const;
+            return validConditions.includes(condition) ? condition as 'new' | 'like_new' | 'good' | 'fair' | 'poor' : 'good';
+          };
+
           return {
             id: item.id,
             title: item.title || 'Untitled Item',
             description: item.description || '',
             price: Number(item.price) || 0,
             original_price: null,
-            condition: item.condition || 'good',
+            condition: getCondition(item.condition),
             size: item.size || null,
             brand: item.brand || null,
             color: item.color || null,
@@ -132,13 +138,19 @@ export const useProduct = (id: string) => {
           ? data.item_images.map((img: any) => img.image_url)
           : ['/placeholder.svg'];
 
+        // Helper function to safely cast condition
+        const getCondition = (condition: any): 'new' | 'like_new' | 'good' | 'fair' | 'poor' => {
+          const validConditions = ['new', 'like_new', 'good', 'fair', 'poor'] as const;
+          return validConditions.includes(condition) ? condition as 'new' | 'like_new' | 'good' | 'fair' | 'poor' : 'good';
+        };
+
         const transformedData = {
           id: data.id,
           title: data.title || 'Untitled Item',
           description: data.description || '',
           price: Number(data.price) || 0,
           original_price: null,
-          condition: data.condition || 'good',
+          condition: getCondition(data.condition),
           size: data.size || null,
           brand: data.brand || null,
           color: data.color || null,

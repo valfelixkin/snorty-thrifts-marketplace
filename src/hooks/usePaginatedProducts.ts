@@ -108,7 +108,7 @@ export const usePaginatedProducts = ({
           // Helper function to safely cast condition
           const getCondition = (condition: any): 'new' | 'like_new' | 'good' | 'fair' | 'poor' => {
             const validConditions = ['new', 'like_new', 'good', 'fair', 'poor'] as const;
-            return validConditions.includes(condition) ? condition : 'good';
+            return validConditions.includes(condition) ? condition as 'new' | 'like_new' | 'good' | 'fair' | 'poor' : 'good';
           };
 
           return {
