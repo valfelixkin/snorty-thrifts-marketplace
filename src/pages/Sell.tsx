@@ -9,27 +9,33 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { useCategories } from '@/hooks/useCategories';
+import { supabase } from '@/integrations/supabase/client';
 
 const Sell = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { data: categories = [], isLoading: categoriesLoading } = useCategories();
 
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    category: '',
+    category_id: '',
     condition: '',
     price: '',
     images: [] as File[]
   });
 
-  const categories = [
-    'Fashion', 'Electronics', 'Furniture', 'Books', 'Audio', 
-    'Cameras', 'Collectibles', 'Home & Garden', 'Sports', 'Toys'
-  ];
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const conditions = ['New', 'Like New', 'Very Good', 'Good', 'Fair'];
+  const conditions = [
+    { value: 'new', label: 'New' },
+    { value: 'like_new', label: 'Like New' },
+    { value: 'good', label: 'Good' },
+    { value: 'fair', label: 'Fair' },
+    { value: 'poor', label: 'Poor' }
+  ];
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -54,7 +60,53 @@ const Sell = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const uploadImages = async (itemId: string) => {
+    const uploadedUrls = [];
+    
+    for (let i = 0; i < formData.images.length; i++) {
+      const file = formData.images[i];
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${itemId}_${i}.${fileExt}`;
+      
+      try {
+        const { data, error } = await supabase.storage
+          .from('item-images')
+          .upload(fileName, file);
+
+        if (error) throw error;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('item-images')
+          .getPublicUrl(fileName);
+
+        uploadedUrls.push(publicUrl);
+      } catch (error) {
+        console.error('Error uploading image:', error);
+      }
+    }
+    
+    return uploadedUrls;
+  };
+
+  const insertItemImages = async (itemId: string, imageUrls: string[]) => {
+    const imageRecords = imageUrls.map((url, index) => ({
+      item_id: itemId,
+      image_url: url,
+      is_primary: index === 0,
+      sort_order: index
+    }));
+
+    const { error } = await supabase
+      .from('item_images')
+      .insert(imageRecords);
+
+    if (error) {
+      console.error('Error inserting item images:', error);
+      throw error;
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!user) {
@@ -67,7 +119,7 @@ const Sell = () => {
       return;
     }
 
-    if (!formData.title || !formData.description || !formData.category || !formData.condition || !formData.price) {
+    if (!formData.title || !formData.description || !formData.category_id || !formData.condition || !formData.price) {
       toast({
         title: "Missing information",
         description: "Please fill in all required fields",
@@ -85,13 +137,50 @@ const Sell = () => {
       return;
     }
 
-    // Simulate successful listing
-    toast({
-      title: "Item listed successfully!",
-      description: "Your item is now live on Snorty Thrifts",
-    });
+    setIsSubmitting(true);
 
-    navigate('/dashboard');
+    try {
+      // Insert the item first
+      const { data: item, error: itemError } = await supabase
+        .from('items')
+        .insert({
+          title: formData.title,
+          description: formData.description,
+          price: parseFloat(formData.price),
+          category_id: formData.category_id,
+          condition: formData.condition as 'new' | 'like_new' | 'good' | 'fair' | 'poor',
+          seller_id: user.id,
+          is_available: true
+        })
+        .select()
+        .single();
+
+      if (itemError) throw itemError;
+
+      // Upload images and insert image records
+      if (formData.images.length > 0) {
+        const imageUrls = await uploadImages(item.id);
+        if (imageUrls.length > 0) {
+          await insertItemImages(item.id, imageUrls);
+        }
+      }
+
+      toast({
+        title: "Item listed successfully!",
+        description: "Your item is now live on Snorty Thrifts",
+      });
+
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Error creating item:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create item. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (!user) {
@@ -217,16 +306,28 @@ const Sell = () => {
                   <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
                     Category *
                   </label>
-                  <Select value={formData.category} onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}>
+                  <Select 
+                    value={formData.category_id} 
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, category_id: value }))}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select a category" />
                     </SelectTrigger>
                     <SelectContent className="bg-white">
-                      {categories.map(category => (
-                        <SelectItem key={category} value={category.toLowerCase()}>
-                          {category}
+                      {!categoriesLoading && categories.length > 0 ? (
+                        categories.map((category) => (
+                          <SelectItem 
+                            key={category.id} 
+                            value={category.id}
+                          >
+                            {category.name}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="loading" disabled>
+                          {categoriesLoading ? 'Loading categories...' : 'No categories available'}
                         </SelectItem>
-                      ))}
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
@@ -235,14 +336,20 @@ const Sell = () => {
                   <label htmlFor="condition" className="block text-sm font-medium text-gray-700 mb-2">
                     Condition *
                   </label>
-                  <Select value={formData.condition} onValueChange={(value) => setFormData(prev => ({ ...prev, condition: value }))}>
+                  <Select 
+                    value={formData.condition} 
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, condition: value }))}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select condition" />
                     </SelectTrigger>
                     <SelectContent className="bg-white">
-                      {conditions.map(condition => (
-                        <SelectItem key={condition} value={condition.toLowerCase()}>
-                          {condition}
+                      {conditions.map((condition) => (
+                        <SelectItem 
+                          key={condition.value} 
+                          value={condition.value}
+                        >
+                          {condition.label}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -287,8 +394,12 @@ const Sell = () => {
                   <Button type="button" variant="outline" onClick={() => navigate('/')}>
                     Cancel
                   </Button>
-                  <Button type="submit" className="gradient-red text-white font-montserrat font-semibold">
-                    List Item
+                  <Button 
+                    type="submit" 
+                    className="gradient-red text-white font-montserrat font-semibold"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? 'Listing...' : 'List Item'}
                   </Button>
                 </div>
               </div>
