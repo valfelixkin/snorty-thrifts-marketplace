@@ -106,6 +106,65 @@ const Sell = () => {
     }
   };
 
+  const validateForm = () => {
+    if (!formData.title.trim()) {
+      toast({
+        title: "Missing title",
+        description: "Please enter a product title",
+        variant: "destructive",
+      });
+      return false;
+    }
+    
+    if (!formData.description.trim()) {
+      toast({
+        title: "Missing description",
+        description: "Please enter a product description",
+        variant: "destructive",
+      });
+      return false;
+    }
+    
+    if (!formData.category_id) {
+      toast({
+        title: "Missing category",
+        description: "Please select a category",
+        variant: "destructive",
+      });
+      return false;
+    }
+    
+    if (!formData.condition) {
+      toast({
+        title: "Missing condition",
+        description: "Please select the item condition",
+        variant: "destructive",
+      });
+      return false;
+    }
+    
+    const price = parseFloat(formData.price);
+    if (!formData.price || isNaN(price) || price <= 0) {
+      toast({
+        title: "Invalid price",
+        description: "Please enter a valid price greater than 0",
+        variant: "destructive",
+      });
+      return false;
+    }
+    
+    if (formData.images.length === 0) {
+      toast({
+        title: "No images",
+        description: "Please add at least one image of your item",
+        variant: "destructive",
+      });
+      return false;
+    }
+    
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -119,21 +178,7 @@ const Sell = () => {
       return;
     }
 
-    if (!formData.title || !formData.description || !formData.category_id || !formData.condition || !formData.price) {
-      toast({
-        title: "Missing information",
-        description: "Please fill in all required fields",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (formData.images.length === 0) {
-      toast({
-        title: "No images",
-        description: "Please add at least one image of your item",
-        variant: "destructive",
-      });
+    if (!validateForm()) {
       return;
     }
 
@@ -144,8 +189,8 @@ const Sell = () => {
       const { data: item, error: itemError } = await supabase
         .from('items')
         .insert({
-          title: formData.title,
-          description: formData.description,
+          title: formData.title.trim(),
+          description: formData.description.trim(),
           price: parseFloat(formData.price),
           category_id: formData.category_id,
           condition: formData.condition as 'new' | 'like_new' | 'good' | 'fair' | 'poor',
@@ -166,11 +211,21 @@ const Sell = () => {
       }
 
       toast({
-        title: "Item listed successfully!",
-        description: "Your item is now live on Snorty Thrifts",
+        title: "Success!",
+        description: "Your item has been listed successfully",
       });
 
-      navigate('/dashboard');
+      // Reset form
+      setFormData({
+        title: '',
+        description: '',
+        category_id: '',
+        condition: '',
+        price: '',
+        images: []
+      });
+
+      navigate('/shop');
     } catch (error) {
       console.error('Error creating item:', error);
       toast({
@@ -313,18 +368,19 @@ const Sell = () => {
                     <SelectTrigger>
                       <SelectValue placeholder="Select a category" />
                     </SelectTrigger>
-                    <SelectContent className="bg-white">
-                      {!categoriesLoading && categories.length > 0 ? (
+                    <SelectContent className="bg-white max-h-60 overflow-y-auto">
+                      {!categoriesLoading && categories && categories.length > 0 ? (
                         categories.map((category) => (
                           <SelectItem 
                             key={category.id} 
                             value={category.id}
+                            className="hover:bg-gray-100 cursor-pointer"
                           >
                             {category.name}
                           </SelectItem>
                         ))
                       ) : (
-                        <SelectItem value="loading" disabled>
+                        <SelectItem value="no-categories" disabled>
                           {categoriesLoading ? 'Loading categories...' : 'No categories available'}
                         </SelectItem>
                       )}
@@ -348,6 +404,7 @@ const Sell = () => {
                         <SelectItem 
                           key={condition.value} 
                           value={condition.value}
+                          className="hover:bg-gray-100 cursor-pointer"
                         >
                           {condition.label}
                         </SelectItem>
@@ -359,17 +416,17 @@ const Sell = () => {
 
               <div>
                 <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-2">
-                  Price *
+                  Price (KSH) *
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
+                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">KSH</span>
                   <Input
                     id="price"
                     type="number"
                     value={formData.price}
                     onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
                     placeholder="0.00"
-                    className="pl-8"
+                    className="pl-16"
                     min="0"
                     step="0.01"
                     required
@@ -387,7 +444,7 @@ const Sell = () => {
                     Ready to list your item?
                   </h3>
                   <p className="text-gray-600">
-                    Your item will be reviewed and go live within 24 hours
+                    Your item will go live immediately after submission
                   </p>
                 </div>
                 <div className="flex space-x-4">

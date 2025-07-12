@@ -1,3 +1,8 @@
+
+User-agent: *
+Allow: /
+
+# Specific crawlers
 User-agent: Googlebot
 Allow: /
 
@@ -10,5 +15,9 @@ Allow: /
 User-agent: facebookexternalhit
 Allow: /
 
-User-agent: *
-Allow: /
+# Sitemaps
+Sitemap: https://snorty-thrifts-marketplace.vercel.app/sitemap.xml
+
+# Disallow admin areas (if any in future)
+Disallow: /admin/
+Disallow: /api/
