@@ -111,7 +111,7 @@ export const usePaginatedProducts = ({
             description: item.description || '',
             price: Number(item.price) || 0,
             original_price: null,
-            condition: item.condition || 'good',
+            condition: item.condition as string || 'good',
             size: item.size || null,
             brand: item.brand || null,
             color: item.color || null,
