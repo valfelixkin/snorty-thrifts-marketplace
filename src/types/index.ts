@@ -6,7 +6,7 @@ export interface Product {
   description: string;
   price: number;
   original_price?: number;
-  condition: string;
+  condition: 'new' | 'like_new' | 'good' | 'fair' | 'poor';
   size?: string;
   brand?: string;
   color?: string;
