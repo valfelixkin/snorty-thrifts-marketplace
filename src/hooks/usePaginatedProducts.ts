@@ -105,10 +105,13 @@ export const usePaginatedProducts = ({
             ? item.item_images.map((img: any) => img.image_url)
             : ['/placeholder.svg'];
 
-          // Helper function to safely cast condition
-          const getCondition = (condition: any): 'new' | 'like_new' | 'good' | 'fair' | 'poor' => {
-            const validConditions = ['new', 'like_new', 'good', 'fair', 'poor'] as const;
-            return validConditions.includes(condition) ? condition as 'new' | 'like_new' | 'good' | 'fair' | 'poor' : 'good';
+          // Helper function to safely cast condition with proper type checking
+          const getCondition = (condition: any): Product['condition'] => {
+            const validConditions: Product['condition'][] = ['new', 'like_new', 'good', 'fair', 'poor'];
+            if (typeof condition === 'string' && validConditions.includes(condition as Product['condition'])) {
+              return condition as Product['condition'];
+            }
+            return 'good'; // Default fallback
           };
 
           return {
