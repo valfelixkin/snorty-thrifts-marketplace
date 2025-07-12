@@ -59,8 +59,12 @@ export const usePaginatedProducts = ({
           query = query.or(`title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`);
         }
 
+        // Fix the condition filter - ensure it's a valid condition value
         if (condition) {
-          query = query.eq('condition', condition);
+          const validConditions: Product['condition'][] = ['new', 'like_new', 'good', 'fair', 'poor'];
+          if (validConditions.includes(condition as Product['condition'])) {
+            query = query.eq('condition', condition as Product['condition']);
+          }
         }
 
         if (brand) {
