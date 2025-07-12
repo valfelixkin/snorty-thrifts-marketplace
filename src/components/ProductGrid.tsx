@@ -5,8 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { formatPrice } from '@/lib/utils';
-import { Heart, Star } from 'lucide-react';
+import { Star } from 'lucide-react';
 import { Product } from '@/types';
+import WishlistButton from './WishlistButton';
 
 interface ProductGridProps {
   products: Product[];
@@ -42,13 +43,10 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products, isLoading }) => {
               alt={product.title}
               className="w-full h-48 object-cover rounded-t-lg"
             />
-            <Button
-              variant="ghost"
-              size="sm"
-              className="absolute top-2 right-2 p-2 bg-white/80 hover:bg-white"
-            >
-              <Heart className="w-4 h-4" />
-            </Button>
+            <WishlistButton
+              productId={product.id}
+              className="absolute top-2 right-2 bg-white/80 hover:bg-white"
+            />
             <Badge className="absolute top-2 left-2 bg-brand-red-600">
               {product.condition}
             </Badge>

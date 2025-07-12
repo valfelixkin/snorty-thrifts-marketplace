@@ -105,13 +105,19 @@ export const usePaginatedProducts = ({
             ? item.item_images.map((img: any) => img.image_url)
             : ['/placeholder.svg'];
 
+          // Helper function to safely cast condition
+          const getCondition = (condition: any): 'new' | 'like_new' | 'good' | 'fair' | 'poor' => {
+            const validConditions = ['new', 'like_new', 'good', 'fair', 'poor'] as const;
+            return validConditions.includes(condition) ? condition : 'good';
+          };
+
           return {
             id: item.id,
             title: item.title || 'Untitled Item',
             description: item.description || '',
             price: Number(item.price) || 0,
             original_price: null,
-            condition: (item.condition as 'new' | 'like_new' | 'good' | 'fair' | 'poor') || 'good',
+            condition: getCondition(item.condition),
             size: item.size || null,
             brand: item.brand || null,
             color: item.color || null,

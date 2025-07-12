@@ -5,11 +5,14 @@ import { Heart, Share2, ShoppingCart, User, MapPin, Calendar } from 'lucide-reac
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useProduct } from '@/hooks/useProducts';
 import { useCart } from '@/contexts/CartContext';
 import { useToast } from '@/hooks/use-toast';
 import { formatPrice } from '@/lib/utils';
 import PaymentButton from '@/components/PaymentButton';
+import ProductReviews from '@/components/ProductReviews';
+import WishlistButton from '@/components/WishlistButton';
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -80,7 +83,7 @@ const ProductDetail = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           {/* Product Images */}
           <div className="space-y-4">
             <div className="aspect-square rounded-lg overflow-hidden bg-white">
@@ -110,9 +113,12 @@ const ProductDetail = () => {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <Badge variant="secondary">{product.category.name}</Badge>
-                <Button variant="ghost" size="sm" onClick={handleShare}>
-                  <Share2 className="w-4 h-4" />
-                </Button>
+                <div className="flex items-center gap-2">
+                  <WishlistButton productId={product.id} />
+                  <Button variant="ghost" size="sm" onClick={handleShare}>
+                    <Share2 className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
               <h1 className="text-3xl font-montserrat font-bold text-brand-black mb-4">
                 {product.title}
@@ -133,7 +139,7 @@ const ProductDetail = () => {
               {product.condition && (
                 <div>
                   <span className="font-medium text-gray-600">Condition:</span>
-                  <p className="capitalize">{product.condition}</p>
+                  <p className="capitalize">{product.condition.replace('_', ' ')}</p>
                 </div>
               )}
               {product.size && (
@@ -154,11 +160,6 @@ const ProductDetail = () => {
                   <p className="capitalize">{product.color}</p>
                 </div>
               )}
-            </div>
-
-            <div>
-              <h3 className="font-montserrat font-semibold text-lg mb-2">Description</h3>
-              <p className="text-gray-700 leading-relaxed">{product.description}</p>
             </div>
 
             {/* Seller Info */}
@@ -184,25 +185,14 @@ const ProductDetail = () => {
                 onPaymentSuccess={handlePaymentSuccess}
               />
               
-              <div className="grid grid-cols-2 gap-4">
-                <Button 
-                  variant="outline" 
-                  size="lg" 
-                  onClick={handleAddToCart}
-                  className="font-montserrat font-semibold"
-                >
-                  <ShoppingCart className="w-5 h-5 mr-2" />
-                  Add to Cart
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="lg"
-                  className="font-montserrat font-semibold"
-                >
-                  <Heart className="w-5 h-5 mr-2" />
-                  Save
-                </Button>
-              </div>
+              <Button 
+                onClick={handleAddToCart}
+                size="lg" 
+                className="w-full font-montserrat font-semibold"
+              >
+                <ShoppingCart className="w-5 h-5 mr-2" />
+                Add to Cart
+              </Button>
             </div>
 
             {/* Additional Info */}
@@ -218,6 +208,25 @@ const ProductDetail = () => {
             </div>
           </div>
         </div>
+
+        {/* Product Details Tabs */}
+        <Tabs defaultValue="description" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="description">Description</TabsTrigger>
+            <TabsTrigger value="reviews">Reviews</TabsTrigger>
+          </TabsList>
+          <TabsContent value="description" className="mt-6">
+            <Card>
+              <CardContent className="p-6">
+                <h3 className="font-montserrat font-semibold text-lg mb-4">Product Description</h3>
+                <p className="text-gray-700 leading-relaxed">{product.description}</p>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          <TabsContent value="reviews" className="mt-6">
+            <ProductReviews productId={product.id} />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

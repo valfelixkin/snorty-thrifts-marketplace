@@ -20,6 +20,7 @@ import Dashboard from "./pages/Dashboard";
 import Sell from "./pages/Sell";
 import Returns from "./pages/Returns";
 import NewReturn from "./pages/NewReturn";
+import OrderTrackingPage from "./pages/OrderTracking";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -55,6 +56,7 @@ const App = () => (
                     <Route path="/sell" element={<Sell />} />
                     <Route path="/returns" element={<Returns />} />
                     <Route path="/returns/new" element={<NewReturn />} />
+                    <Route path="/order/:orderId" element={<OrderTrackingPage />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </main>
