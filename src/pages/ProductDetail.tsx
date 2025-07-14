@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -75,7 +76,16 @@ const ProductDetail = () => {
       return;
     }
 
-    addToCart(product);
+    // Transform Product to CartItem format
+    const cartItem = {
+      id: product.id,
+      title: product.title,
+      price: product.price,
+      image: product.images[0] || '/placeholder.svg', // Use first image or fallback
+      seller: product.seller.full_name,
+    };
+
+    addToCart(cartItem);
     toast({
       title: "Added to cart",
       description: `${product.title} has been added to your cart`,
