@@ -13,8 +13,9 @@ import { useCategories } from '@/hooks/useCategories';
 import { supabase } from '@/integrations/supabase/client';
 import { UploadCloud } from 'lucide-react';
 import ImagePreview from '@/components/ImagePreview';
+import { Database } from '@/integrations/supabase/types';
 
-type ItemCondition = 'new' | 'like_new' | 'good' | 'fair' | 'poor';
+type ItemCondition = Database['public']['Enums']['item_condition'];
 
 const Sell = () => {
   const [title, setTitle] = useState('');
@@ -108,13 +109,14 @@ const Sell = () => {
     setIsSubmitting(true);
 
     try {
-      // Insert the item - using description as title since items table doesn't have title field
+      // Insert the item with both title and description
       const { data: itemData, error: itemError } = await supabase
         .from('items')
         .insert({
-          description: `${title}\n\n${description}`, // Combine title and description
+          title: title,
+          description: description,
           price: parseFloat(price),
-          condition,
+          condition: condition,
           category_id: categoryId,
           seller_id: user.id,
           brand: brand || null,
