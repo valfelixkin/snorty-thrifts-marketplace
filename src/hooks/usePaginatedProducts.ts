@@ -27,6 +27,10 @@ export const usePaginatedProducts = ({
   return useQuery({
     queryKey: ['paginated-items', page, pageSize, categoryId, searchTerm, sortBy, priceRange, condition, brand],
     queryFn: async () => {
+      console.log('Fetching products with params:', {
+        page, pageSize, categoryId, searchTerm, sortBy, priceRange, condition, brand
+      });
+
       try {
         let query = supabase
           .from('items')
@@ -50,28 +54,32 @@ export const usePaginatedProducts = ({
           `, { count: 'exact' })
           .eq('is_available', true);
 
-        // Apply filters
-        if (categoryId && categoryId !== 'all') {
+        // Apply filters only if they have valid values
+        if (categoryId && categoryId !== 'all' && categoryId !== '') {
+          console.log('Applying category filter:', categoryId);
           query = query.eq('category_id', categoryId);
         }
 
-        if (searchTerm) {
+        if (searchTerm && searchTerm.trim() !== '') {
+          console.log('Applying search filter:', searchTerm);
           query = query.or(`title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`);
         }
 
-        // Fix the condition filter - ensure it's a valid condition value
-        if (condition) {
+        if (condition && condition !== 'any' && condition !== '') {
           const validConditions: Product['condition'][] = ['new', 'like_new', 'good', 'fair', 'poor'];
           if (validConditions.includes(condition as Product['condition'])) {
+            console.log('Applying condition filter:', condition);
             query = query.eq('condition', condition as Product['condition']);
           }
         }
 
-        if (brand) {
+        if (brand && brand !== 'any' && brand !== '') {
+          console.log('Applying brand filter:', brand);
           query = query.eq('brand', brand);
         }
 
-        if (priceRange) {
+        if (priceRange && Array.isArray(priceRange) && priceRange.length === 2) {
+          console.log('Applying price range filter:', priceRange);
           query = query.gte('price', priceRange[0]).lte('price', priceRange[1]);
         }
 
@@ -96,66 +104,108 @@ export const usePaginatedProducts = ({
         const to = from + pageSize - 1;
         query = query.range(from, to);
 
+        console.log('Executing query...');
         const { data, error, count } = await query;
 
         if (error) {
-          console.error('Error fetching products:', error);
-          throw error;
+          console.error('Supabase query error:', error);
+          throw new Error(`Database error: ${error.message}`);
         }
 
-        // Transform the data
-        const transformedData = data?.map(item => {
-          const images = item.item_images?.length > 0 
-            ? item.item_images.map((img: any) => img.image_url)
-            : ['/placeholder.svg'];
+        console.log('Raw data received:', data);
+        console.log('Total count:', count);
 
-          // Helper function to safely cast condition with proper type checking
-          const getCondition = (condition: any): Product['condition'] => {
-            const validConditions: Product['condition'][] = ['new', 'like_new', 'good', 'fair', 'poor'];
-            if (typeof condition === 'string' && validConditions.includes(condition as Product['condition'])) {
-              return condition as Product['condition'];
-            }
-            return 'good'; // Default fallback
-          };
+        // Transform the data with better error handling
+        const transformedData = data?.map((item, index) => {
+          try {
+            console.log(`Transforming item ${index}:`, item);
 
-          // Safely handle category data
-          const categoryData = item.category && typeof item.category === 'object' && !Array.isArray(item.category) 
-            ? item.category 
-            : null;
+            const images = item.item_images?.length > 0 
+              ? item.item_images.map((img: any) => img.image_url).filter(url => url)
+              : ['/placeholder.svg'];
 
-          // Safely handle seller data
-          const sellerData = item.seller && typeof item.seller === 'object' && !Array.isArray(item.seller)
-            ? item.seller
-            : null;
+            // Helper function to safely cast condition with proper type checking
+            const getCondition = (condition: any): Product['condition'] => {
+              const validConditions: Product['condition'][] = ['new', 'like_new', 'good', 'fair', 'poor'];
+              if (typeof condition === 'string' && validConditions.includes(condition as Product['condition'])) {
+                return condition as Product['condition'];
+              }
+              console.warn('Invalid condition found:', condition, 'defaulting to good');
+              return 'good'; // Default fallback
+            };
 
-          return {
-            id: item.id,
-            title: item.title || 'Untitled Item',
-            description: item.description || '',
-            price: Number(item.price) || 0,
-            original_price: null,
-            condition: getCondition(item.condition),
-            size: item.size || null,
-            brand: item.brand || null,
-            color: item.color || null,
-            images,
-            is_available: Boolean(item.is_available),
-            is_featured: Boolean(item.is_featured),
-            created_at: item.created_at || new Date().toISOString(),
-            category: {
-              id: categoryData?.id || '',
-              name: categoryData?.name || 'Uncategorized',
-              slug: categoryData?.slug || 'uncategorized'
-            },
-            seller: {
-              id: sellerData?.id || '',
-              full_name: `${sellerData?.first_name || ''} ${sellerData?.last_name || ''}`.trim() || sellerData?.username || 'Unknown Seller',
-              username: sellerData?.username || 'unknown'
-            }
-          } as Product;
+            // Safely handle category data
+            const categoryData = item.category && typeof item.category === 'object' && !Array.isArray(item.category) 
+              ? item.category 
+              : null;
+
+            // Safely handle seller data
+            const sellerData = item.seller && typeof item.seller === 'object' && !Array.isArray(item.seller)
+              ? item.seller
+              : null;
+
+            const transformedItem: Product = {
+              id: item.id,
+              title: item.title || 'Untitled Item',
+              description: item.description || '',
+              price: Number(item.price) || 0,
+              original_price: null,
+              condition: getCondition(item.condition),
+              size: item.size || null,
+              brand: item.brand || null,
+              color: item.color || null,
+              images,
+              is_available: Boolean(item.is_available),
+              is_featured: Boolean(item.is_featured),
+              created_at: item.created_at || new Date().toISOString(),
+              category: {
+                id: categoryData?.id || '',
+                name: categoryData?.name || 'Uncategorized',
+                slug: categoryData?.slug || 'uncategorized'
+              },
+              seller: {
+                id: sellerData?.id || '',
+                full_name: `${sellerData?.first_name || ''} ${sellerData?.last_name || ''}`.trim() || sellerData?.username || 'Unknown Seller',
+                username: sellerData?.username || 'unknown'
+              }
+            };
+
+            console.log(`Successfully transformed item ${index}:`, transformedItem);
+            return transformedItem;
+          } catch (transformError) {
+            console.error(`Error transforming item ${index}:`, transformError, item);
+            // Return a safe fallback item instead of failing completely
+            return {
+              id: item.id || `error-${index}`,
+              title: item.title || 'Error Loading Item',
+              description: item.description || 'This item could not be loaded properly',
+              price: Number(item.price) || 0,
+              original_price: null,
+              condition: 'good' as Product['condition'],
+              size: null,
+              brand: null,
+              color: null,
+              images: ['/placeholder.svg'],
+              is_available: true,
+              is_featured: false,
+              created_at: new Date().toISOString(),
+              category: {
+                id: '',
+                name: 'Uncategorized',
+                slug: 'uncategorized'
+              },
+              seller: {
+                id: '',
+                full_name: 'Unknown Seller',
+                username: 'unknown'
+              }
+            } as Product;
+          }
         }) || [];
 
-        return {
+        console.log('Final transformed data:', transformedData);
+
+        const result = {
           products: transformedData,
           totalCount: count || 0,
           totalPages: Math.ceil((count || 0) / pageSize),
@@ -163,19 +213,19 @@ export const usePaginatedProducts = ({
           hasNextPage: page < Math.ceil((count || 0) / pageSize),
           hasPreviousPage: page > 1
         };
+
+        console.log('Returning result:', result);
+        return result;
       } catch (error) {
         console.error('Products fetch error:', error);
-        return {
-          products: [],
-          totalCount: 0,
-          totalPages: 0,
-          currentPage: 1,
-          hasNextPage: false,
-          hasPreviousPage: false
-        };
+        // Re-throw the error so React Query can handle it properly
+        throw error;
       }
     },
     staleTime: 5 * 60 * 1000,
-    retry: 3,
+    retry: (failureCount, error) => {
+      console.log(`Query failed ${failureCount} times:`, error);
+      return failureCount < 3;
+    },
   });
 };

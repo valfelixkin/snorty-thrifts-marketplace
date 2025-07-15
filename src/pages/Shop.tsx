@@ -48,6 +48,14 @@ const Shop = () => {
 
   const { data: paginatedData, isLoading, error } = usePaginatedProducts(queryParams);
 
+  // Log for debugging
+  console.log('Shop component state:', {
+    queryParams,
+    paginatedData,
+    isLoading,
+    error
+  });
+
   const handleClearFilters = () => {
     setSearchTerm('');
     setSelectedCategory('all');
@@ -137,22 +145,6 @@ const Shop = () => {
     );
   }
 
-  // Show error state
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50 py-8">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center py-12">
-            <p className="text-red-500 text-lg">Error loading products. Please try again.</p>
-            <Button onClick={() => window.location.reload()} className="mt-4">
-              Retry
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -189,9 +181,18 @@ const Shop = () => {
             {currentPage > 1 && ` (Page ${currentPage} of ${paginatedData?.totalPages || 1})`}
             {debouncedSearchTerm && ` for "${debouncedSearchTerm}"`}
           </p>
+          {error && (
+            <div className="text-red-600 text-sm">
+              ⚠️ Error loading products
+            </div>
+          )}
         </div>
 
-        <ProductGrid products={paginatedData?.products || []} isLoading={isLoading} />
+        <ProductGrid 
+          products={paginatedData?.products || []} 
+          isLoading={isLoading} 
+          error={error}
+        />
 
         {/* Pagination */}
         {paginatedData && paginatedData.totalPages > 1 && (
