@@ -42,6 +42,22 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
 }) => {
   const commonBrands = ['Apple', 'Samsung', 'Nike', 'Adidas', 'Sony', 'LG', 'Dell', 'HP', 'Canon', 'Nikon'];
 
+  const handleCategoryChange = (value: string) => {
+    setSelectedCategory(value);
+  };
+
+  const handleConditionChange = (value: string) => {
+    setCondition(value);
+  };
+
+  const handleSortChange = (value: string) => {
+    setSortBy(value);
+  };
+
+  const handleBrandChange = (value: string) => {
+    setBrand(value);
+  };
+
   return (
     <Card className="mb-6">
       <CardContent className="p-6">
@@ -58,13 +74,13 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
           </div>
           
           {/* Category Filter */}
-          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+          <Select value={selectedCategory} onValueChange={handleCategoryChange}>
             <SelectTrigger>
               <SelectValue placeholder="All Categories" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Categories</SelectItem>
-              {categories?.map((category) => (
+              {categories?.filter(category => category?.id && category?.name).map((category) => (
                 <SelectItem key={category.id} value={category.id}>
                   {category.name}
                 </SelectItem>
@@ -73,12 +89,12 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
           </Select>
 
           {/* Condition Filter */}
-          <Select value={condition} onValueChange={setCondition}>
+          <Select value={condition} onValueChange={handleConditionChange}>
             <SelectTrigger>
               <SelectValue placeholder="Any Condition" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Any Condition</SelectItem>
+              <SelectItem value="any">Any Condition</SelectItem>
               <SelectItem value="new">New</SelectItem>
               <SelectItem value="like_new">Like New</SelectItem>
               <SelectItem value="good">Good</SelectItem>
@@ -88,7 +104,7 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
           </Select>
 
           {/* Sort */}
-          <Select value={sortBy} onValueChange={setSortBy}>
+          <Select value={sortBy} onValueChange={handleSortChange}>
             <SelectTrigger>
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
@@ -118,12 +134,12 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
           </div>
 
           {/* Brand Filter */}
-          <Select value={brand} onValueChange={setBrand}>
+          <Select value={brand} onValueChange={handleBrandChange}>
             <SelectTrigger>
               <SelectValue placeholder="Any Brand" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Any Brand</SelectItem>
+              <SelectItem value="any">Any Brand</SelectItem>
               {commonBrands.map((brandName) => (
                 <SelectItem key={brandName} value={brandName}>
                   {brandName}

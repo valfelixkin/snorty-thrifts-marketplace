@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -28,8 +27,8 @@ const Shop = () => {
   const [sortBy, setSortBy] = useState('newest');
   const [selectedCategory, setSelectedCategory] = useState(categoryFromUrl || 'all');
   const [priceRange, setPriceRange] = useState<[number, number]>([100, 100000]);
-  const [condition, setCondition] = useState('');
-  const [brand, setBrand] = useState('');
+  const [condition, setCondition] = useState('any');
+  const [brand, setBrand] = useState('any');
   const [currentPage, setCurrentPage] = useState(1);
 
   // Debounce search term to reduce API calls
@@ -43,8 +42,8 @@ const Shop = () => {
     searchTerm: debouncedSearchTerm || undefined,
     sortBy,
     priceRange: priceRange[0] !== 100 || priceRange[1] !== 100000 ? priceRange : undefined,
-    condition: condition || undefined,
-    brand: brand || undefined,
+    condition: condition === 'any' ? undefined : condition,
+    brand: brand === 'any' ? undefined : brand,
   }), [currentPage, selectedCategory, debouncedSearchTerm, sortBy, priceRange, condition, brand]);
 
   const { data: paginatedData, isLoading, error } = usePaginatedProducts(queryParams);
@@ -53,8 +52,8 @@ const Shop = () => {
     setSearchTerm('');
     setSelectedCategory('all');
     setPriceRange([100, 100000]);
-    setCondition('');
-    setBrand('');
+    setCondition('any');
+    setBrand('any');
     setSortBy('newest');
     setCurrentPage(1);
     setSearchParams({});
