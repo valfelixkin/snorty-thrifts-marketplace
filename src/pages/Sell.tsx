@@ -1,236 +1,246 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Upload, X, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/hooks/use-toast';
-import { useCategories } from '@/hooks/useCategories';
+import { Badge } from '@/components/ui/badge';
+import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useCategories } from '@/hooks/useCategories';
+import { useAuth } from '@/contexts/AuthContext';
+import { Upload, X, ImageIcon } from 'lucide-react';
+import LoadingSpinner from '@/components/LoadingSpinner';
+import { Progress } from '@/components/ui/progress';
+
+interface FormData {
+  title: string;
+  description: string;
+  price: string;
+  condition: string;
+  categoryId: string;
+  brand: string;
+  size: string;
+  color: string;
+}
+
+interface UploadedImage {
+  file: File;
+  preview: string;
+  uploading?: boolean;
+  uploaded?: boolean;
+  progress?: number;
+}
 
 const Sell = () => {
-  const { user } = useAuth();
-  const { toast } = useToast();
   const navigate = useNavigate();
-  const { data: categories = [], isLoading: categoriesLoading } = useCategories();
-
-  const [formData, setFormData] = useState({
+  const { user } = useAuth();
+  const { data: categories, isLoading: categoriesLoading } = useCategories();
+  
+  const [formData, setFormData] = useState<FormData>({
     title: '',
     description: '',
-    category_id: '',
-    condition: '',
     price: '',
-    images: [] as File[]
+    condition: '',
+    categoryId: '',
+    brand: '',
+    size: '',
+    color: '',
   });
 
+  const [images, setImages] = useState<UploadedImage[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const conditions = [
-    { value: 'new', label: 'New' },
-    { value: 'like_new', label: 'Like New' },
-    { value: 'good', label: 'Good' },
-    { value: 'fair', label: 'Fair' },
-    { value: 'poor', label: 'Poor' }
-  ];
+  const handleInputChange = (field: keyof FormData, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    if (formData.images.length + files.length > 5) {
-      toast({
-        title: "Too many images",
-        description: "You can upload a maximum of 5 images",
-        variant: "destructive",
-      });
-      return;
-    }
-    setFormData(prev => ({
-      ...prev,
-      images: [...prev.images, ...files]
-    }));
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || []);
+    
+    files.forEach(file => {
+      if (file.type.startsWith('image/')) {
+        const preview = URL.createObjectURL(file);
+        setImages(prev => [...prev, { file, preview, uploading: false }]);
+      } else {
+        toast({
+          title: "Invalid file type",
+          description: "Please upload only image files",
+          variant: "destructive",
+        });
+      }
+    });
   };
 
   const removeImage = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      images: prev.images.filter((_, i) => i !== index)
-    }));
+    setImages(prev => {
+      const newImages = [...prev];
+      URL.revokeObjectURL(newImages[index].preview);
+      newImages.splice(index, 1);
+      return newImages;
+    });
   };
 
-  const uploadImages = async (itemId: string) => {
-    const uploadedUrls = [];
-    
-    for (let i = 0; i < formData.images.length; i++) {
-      const file = formData.images[i];
+  const uploadImageToSupabase = async (file: File, index: number): Promise<string | null> => {
+    try {
+      // Update uploading state
+      setImages(prev => prev.map((img, i) => 
+        i === index ? { ...img, uploading: true, progress: 0 } : img
+      ));
+
       const fileExt = file.name.split('.').pop();
-      const fileName = `${itemId}_${i}.${fileExt}`;
-      
-      try {
-        const { data, error } = await supabase.storage
-          .from('item-images')
-          .upload(fileName, file);
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+      const filePath = `items/${fileName}`;
 
-        if (error) throw error;
+      const { data, error } = await supabase.storage
+        .from('item-images')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false,
+        });
 
-        const { data: { publicUrl } } = supabase.storage
-          .from('item-images')
-          .getPublicUrl(fileName);
-
-        uploadedUrls.push(publicUrl);
-      } catch (error) {
-        console.error('Error uploading image:', error);
+      if (error) {
+        console.error('Upload error:', error);
+        throw error;
       }
-    }
-    
-    return uploadedUrls;
-  };
 
-  const insertItemImages = async (itemId: string, imageUrls: string[]) => {
-    const imageRecords = imageUrls.map((url, index) => ({
-      item_id: itemId,
-      image_url: url,
-      is_primary: index === 0,
-      sort_order: index
-    }));
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('item-images')
+        .getPublicUrl(filePath);
 
-    const { error } = await supabase
-      .from('item_images')
-      .insert(imageRecords);
+      // Update uploaded state
+      setImages(prev => prev.map((img, i) => 
+        i === index ? { ...img, uploading: false, uploaded: true, progress: 100 } : img
+      ));
 
-    if (error) {
-      console.error('Error inserting item images:', error);
-      throw error;
-    }
-  };
+      return publicUrl;
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      
+      // Update error state
+      setImages(prev => prev.map((img, i) => 
+        i === index ? { ...img, uploading: false, uploaded: false, progress: 0 } : img
+      ));
 
-  const validateForm = () => {
-    if (!formData.title.trim()) {
       toast({
-        title: "Missing title",
-        description: "Please enter a product title",
+        title: "Upload failed",
+        description: "Failed to upload image. Please try again.",
         variant: "destructive",
       });
-      return false;
+      
+      return null;
     }
-    
-    if (!formData.description.trim()) {
-      toast({
-        title: "Missing description",
-        description: "Please enter a product description",
-        variant: "destructive",
-      });
-      return false;
-    }
-    
-    if (!formData.category_id) {
-      toast({
-        title: "Missing category",
-        description: "Please select a category",
-        variant: "destructive",
-      });
-      return false;
-    }
-    
-    if (!formData.condition) {
-      toast({
-        title: "Missing condition",
-        description: "Please select the item condition",
-        variant: "destructive",
-      });
-      return false;
-    }
-    
-    const price = parseFloat(formData.price);
-    if (!formData.price || isNaN(price) || price <= 0) {
-      toast({
-        title: "Invalid price",
-        description: "Please enter a valid price greater than 0",
-        variant: "destructive",
-      });
-      return false;
-    }
-    
-    if (formData.images.length === 0) {
-      toast({
-        title: "No images",
-        description: "Please add at least one image of your item",
-        variant: "destructive",
-      });
-      return false;
-    }
-    
-    return true;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!user) {
       toast({
-        title: "Please log in",
-        description: "You need to be logged in to sell items",
+        title: "Authentication required",
+        description: "Please log in to sell items",
         variant: "destructive",
       });
       navigate('/login');
       return;
     }
 
-    if (!validateForm()) {
+    // Validate form
+    if (!formData.title || !formData.description || !formData.price || !formData.condition || !formData.categoryId) {
+      toast({
+        title: "Missing fields",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (images.length === 0) {
+      toast({
+        title: "No images",
+        description: "Please upload at least one image",
+        variant: "destructive",
+      });
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      // Insert the item first
+      // Upload all images
+      const imageUrls: string[] = [];
+      for (let i = 0; i < images.length; i++) {
+        const url = await uploadImageToSupabase(images[i].file, i);
+        if (url) {
+          imageUrls.push(url);
+        }
+      }
+
+      if (imageUrls.length === 0) {
+        throw new Error('No images were uploaded successfully');
+      }
+
+      // Create the item in the database
       const { data: item, error: itemError } = await supabase
         .from('items')
         .insert({
-          title: formData.title.trim(),
-          description: formData.description.trim(),
+          title: formData.title,
+          description: formData.description,
           price: parseFloat(formData.price),
-          category_id: formData.category_id,
-          condition: formData.condition as 'new' | 'like_new' | 'good' | 'fair' | 'poor',
+          condition: formData.condition as any,
+          category_id: formData.categoryId,
+          brand: formData.brand || null,
+          size: formData.size || null,
+          color: formData.color || null,
           seller_id: user.id,
-          is_available: true
+          is_available: true,
         })
         .select()
         .single();
 
-      if (itemError) throw itemError;
-
-      // Upload images and insert image records
-      if (formData.images.length > 0) {
-        const imageUrls = await uploadImages(item.id);
-        if (imageUrls.length > 0) {
-          await insertItemImages(item.id, imageUrls);
-        }
+      if (itemError) {
+        console.error('Error creating item:', itemError);
+        throw itemError;
       }
 
-      toast({
-        title: "Success!",
-        description: "Your item has been listed successfully",
-      });
+      // Add images to item_images table
+      const imageInserts = imageUrls.map((url, index) => ({
+        item_id: item.id,
+        image_url: url,
+        is_primary: index === 0,
+        sort_order: index,
+      }));
 
-      // Reset form
-      setFormData({
-        title: '',
-        description: '',
-        category_id: '',
-        condition: '',
-        price: '',
-        images: []
-      });
+      const { error: imagesError } = await supabase
+        .from('item_images')
+        .insert(imageInserts);
 
-      navigate('/shop');
+      if (imagesError) {
+        console.error('Error adding images:', imagesError);
+        // Don't throw here as the item was created successfully
+        toast({
+          title: "Item created",
+          description: "Item created but some images may not have been saved",
+          variant: "default",
+        });
+      } else {
+        toast({
+          title: "Success!",
+          description: "Your item has been listed successfully",
+          variant: "default",
+        });
+      }
+
+      // Redirect to the new product page
+      navigate(`/product/${item.id}`);
     } catch (error) {
-      console.error('Error creating item:', error);
+      console.error('Error submitting form:', error);
       toast({
         title: "Error",
-        description: "Failed to create item. Please try again.",
+        description: "Failed to create listing. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -238,231 +248,239 @@ const Sell = () => {
     }
   };
 
-  if (!user) {
+  if (categoriesLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Card className="max-w-md w-full mx-4">
-          <CardContent className="text-center p-8">
-            <h2 className="text-2xl font-montserrat font-bold text-brand-black mb-4">
-              Sign in to sell
-            </h2>
-            <p className="text-gray-600 mb-6">
-              You need to be logged in to list items for sale
-            </p>
-            <div className="space-y-3">
-              <Button onClick={() => navigate('/login')} className="w-full gradient-red text-white">
-                Sign In
-              </Button>
-              <Button onClick={() => navigate('/register')} variant="outline" className="w-full">
-                Create Account
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+          <LoadingSpinner size="lg" text="Loading categories..." />
+        </div>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
           <h1 className="text-3xl md:text-4xl font-montserrat font-bold text-brand-black mb-4">
             Sell Your Item
           </h1>
-          <p className="text-lg text-gray-600">
-            List your item and reach thousands of potential buyers
+          <p className="text-gray-600">
+            List your pre-loved items and reach thousands of potential buyers
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-8">
-          <Card>
-            <CardHeader>
-              <CardTitle className="font-montserrat">Item Photos</CardTitle>
-              <p className="text-sm text-gray-600">Add up to 5 photos. The first photo will be your cover image.</p>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                {formData.images.map((image, index) => (
-                  <div key={index} className="relative group">
-                    <img
-                      src={URL.createObjectURL(image)}
-                      alt={`Upload ${index + 1}`}
-                      className="w-full h-32 object-cover rounded-lg border-2 border-gray-200"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeImage(index)}
-                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                    {index === 0 && (
-                      <div className="absolute bottom-2 left-2 bg-brand-red-600 text-white text-xs px-2 py-1 rounded">
-                        Cover
-                      </div>
-                    )}
-                  </div>
-                ))}
-                
-                {formData.images.length < 5 && (
-                  <label className="w-full h-32 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-brand-red-400 transition-colors">
-                    <Camera className="w-8 h-8 text-gray-400 mb-2" />
-                    <span className="text-sm text-gray-500">Add Photo</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      className="hidden"
-                      onChange={handleImageUpload}
-                    />
-                  </label>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="font-montserrat">Item Details</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div>
-                <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
-                  Title *
-                </label>
+        <Card>
+          <CardHeader>
+            <CardTitle>Item Details</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              
+              
+              {/* Title */}
+              <div className="space-y-2">
+                <Label htmlFor="title">Title *</Label>
                 <Input
                   id="title"
                   value={formData.title}
-                  onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                  placeholder="What are you selling?"
-                  className="w-full"
+                  onChange={(e) => handleInputChange('title', e.target.value)}
+                  placeholder="Enter item title"
                   required
                 />
               </div>
 
-              <div>
-                <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
-                  Description *
-                </label>
+              {/* Description */}
+              <div className="space-y-2">
+                <Label htmlFor="description">Description *</Label>
                 <Textarea
                   id="description"
                   value={formData.description}
-                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                  placeholder="Describe your item in detail..."
-                  rows={5}
-                  className="w-full"
+                  onChange={(e) => handleInputChange('description', e.target.value)}
+                  placeholder="Describe your item in detail"
+                  rows={4}
                   required
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
-                    Category *
-                  </label>
-                  <Select 
-                    value={formData.category_id} 
-                    onValueChange={(value) => setFormData(prev => ({ ...prev, category_id: value }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a category" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-white max-h-60 overflow-y-auto">
-                      {!categoriesLoading && categories && categories.length > 0 ? (
-                        categories.map((category) => (
-                          <SelectItem 
-                            key={category.id} 
-                            value={category.id}
-                            className="hover:bg-gray-100 cursor-pointer"
-                          >
-                            {category.name}
-                          </SelectItem>
-                        ))
-                      ) : (
-                        <SelectItem value="no-categories" disabled>
-                          {categoriesLoading ? 'Loading categories...' : 'No categories available'}
-                        </SelectItem>
-                      )}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <label htmlFor="condition" className="block text-sm font-medium text-gray-700 mb-2">
-                    Condition *
-                  </label>
-                  <Select 
-                    value={formData.condition} 
-                    onValueChange={(value) => setFormData(prev => ({ ...prev, condition: value }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select condition" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-white">
-                      {conditions.map((condition) => (
-                        <SelectItem 
-                          key={condition.value} 
-                          value={condition.value}
-                          className="hover:bg-gray-100 cursor-pointer"
-                        >
-                          {condition.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div>
-                <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-2">
-                  Price (KSH) *
-                </label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">KSH</span>
+              {/* Price and Condition Row */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="price">Price (KSH) *</Label>
                   <Input
                     id="price"
                     type="number"
                     value={formData.price}
-                    onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
-                    placeholder="0.00"
-                    className="pl-16"
+                    onChange={(e) => handleInputChange('price', e.target.value)}
+                    placeholder="0"
                     min="0"
                     step="0.01"
                     required
                   />
                 </div>
-              </div>
-            </CardContent>
-          </Card>
 
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-montserrat font-semibold text-lg text-brand-black">
-                    Ready to list your item?
-                  </h3>
-                  <p className="text-gray-600">
-                    Your item will go live immediately after submission
-                  </p>
-                </div>
-                <div className="flex space-x-4">
-                  <Button type="button" variant="outline" onClick={() => navigate('/')}>
-                    Cancel
-                  </Button>
-                  <Button 
-                    type="submit" 
-                    className="gradient-red text-white font-montserrat font-semibold"
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? 'Listing...' : 'List Item'}
-                  </Button>
+                <div className="space-y-2">
+                  <Label htmlFor="condition">Condition *</Label>
+                  <Select value={formData.condition} onValueChange={(value) => handleInputChange('condition', value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select condition" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="new">New</SelectItem>
+                      <SelectItem value="like_new">Like New</SelectItem>
+                      <SelectItem value="good">Good</SelectItem>
+                      <SelectItem value="fair">Fair</SelectItem>
+                      <SelectItem value="poor">Poor</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        </form>
+
+              {/* Category */}
+              <div className="space-y-2">
+                <Label htmlFor="category">Category *</Label>
+                <Select value={formData.categoryId} onValueChange={(value) => handleInputChange('categoryId', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories?.map((category) => (
+                      <SelectItem key={category.id} value={category.id}>
+                        {category.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Optional Fields Row */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="brand">Brand</Label>
+                  <Input
+                    id="brand"
+                    value={formData.brand}
+                    onChange={(e) => handleInputChange('brand', e.target.value)}
+                    placeholder="Brand name"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="size">Size</Label>
+                  <Input
+                    id="size"
+                    value={formData.size}
+                    onChange={(e) => handleInputChange('size', e.target.value)}
+                    placeholder="Size"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="color">Color</Label>
+                  <Input
+                    id="color"
+                    value={formData.color}
+                    onChange={(e) => handleInputChange('color', e.target.value)}
+                    placeholder="Color"
+                  />
+                </div>
+              </div>
+
+              {/* Image Upload */}
+              <div className="space-y-4">
+                <Label>Images *</Label>
+                
+                {/* Upload Button */}
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                  <input
+                    type="file"
+                    id="images"
+                    multiple
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                  />
+                  <label
+                    htmlFor="images"
+                    className="cursor-pointer flex flex-col items-center space-y-2"
+                  >
+                    <Upload className="w-8 h-8 text-gray-400" />
+                    <span className="text-gray-600">Click to upload images</span>
+                    <span className="text-sm text-gray-400">PNG, JPG, GIF up to 10MB</span>
+                  </label>
+                </div>
+
+                {/* Image Previews */}
+                {images.length > 0 && (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {images.map((image, index) => (
+                      <div key={index} className="relative group">
+                        <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
+                          <img
+                            src={image.preview}
+                            alt={`Preview ${index + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        
+                        {/* Upload Progress */}
+                        {image.uploading && (
+                          <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-lg">
+                            <div className="text-white text-center">
+                              <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+                              <span className="text-xs">Uploading...</span>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Success Badge */}
+                        {image.uploaded && (
+                          <div className="absolute top-2 left-2">
+                            <Badge variant="default" className="bg-green-500">
+                              ✓
+                            </Badge>
+                          </div>
+                        )}
+
+                        {/* Remove Button */}
+                        <button
+                          type="button"
+                          onClick={() => removeImage(index)}
+                          className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+
+                        {/* Primary Badge */}
+                        {index === 0 && (
+                          <div className="absolute bottom-2 left-2">
+                            <Badge variant="default">Primary</Badge>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Submit Button */}
+              <Button 
+                type="submit" 
+                className="w-full gradient-red text-white" 
+                disabled={isSubmitting || images.some(img => img.uploading)}
+              >
+                {isSubmitting ? (
+                  <>
+                    <LoadingSpinner size="sm" />
+                    <span className="ml-2">Creating Listing...</span>
+                  </>
+                ) : (
+                  'Create Listing'
+                )}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

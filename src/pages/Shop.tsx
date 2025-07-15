@@ -1,11 +1,13 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useCategories } from '@/hooks/useCategories';
 import { usePaginatedProducts } from '@/hooks/usePaginatedProducts';
+import { useDebounced } from '@/hooks/useDebounced';
 import ProductFilters from '@/components/ProductFilters';
 import ProductGrid from '@/components/ProductGrid';
+import LoadingSpinner from '@/components/LoadingSpinner';
 import {
   Pagination,
   PaginationContent,
@@ -20,7 +22,7 @@ const Shop = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const categoryFromUrl = searchParams.get('category');
   
-  const { data: categories } = useCategories();
+  const { data: categories, isLoading: categoriesLoading } = useCategories();
   
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('newest');
@@ -30,16 +32,22 @@ const Shop = () => {
   const [brand, setBrand] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
 
-  const { data: paginatedData, isLoading } = usePaginatedProducts({
+  // Debounce search term to reduce API calls
+  const debouncedSearchTerm = useDebounced(searchTerm, 500);
+
+  // Memoize the query parameters to prevent unnecessary re-renders
+  const queryParams = useMemo(() => ({
     page: currentPage,
     pageSize: 12,
     categoryId: selectedCategory === 'all' ? undefined : selectedCategory,
-    searchTerm: searchTerm || undefined,
+    searchTerm: debouncedSearchTerm || undefined,
     sortBy,
     priceRange: priceRange[0] !== 100 || priceRange[1] !== 100000 ? priceRange : undefined,
     condition: condition || undefined,
     brand: brand || undefined,
-  });
+  }), [currentPage, selectedCategory, debouncedSearchTerm, sortBy, priceRange, condition, brand]);
+
+  const { data: paginatedData, isLoading, error } = usePaginatedProducts(queryParams);
 
   const handleClearFilters = () => {
     setSearchTerm('');
@@ -119,6 +127,33 @@ const Shop = () => {
     return items;
   };
 
+  // Show loading state for initial load
+  if (categoriesLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <LoadingSpinner size="lg" text="Loading shop..." />
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center py-12">
+            <p className="text-red-500 text-lg">Error loading products. Please try again.</p>
+            <Button onClick={() => window.location.reload()} className="mt-4">
+              Retry
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -153,6 +188,7 @@ const Shop = () => {
           <p className="text-gray-600">
             {paginatedData?.totalCount || 0} items found
             {currentPage > 1 && ` (Page ${currentPage} of ${paginatedData?.totalPages || 1})`}
+            {debouncedSearchTerm && ` for "${debouncedSearchTerm}"`}
           </p>
         </div>
 

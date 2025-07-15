@@ -3,10 +3,11 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { CartProvider } from "@/contexts/CartContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { NavigationControl } from "@/components/NavigationControl";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Index from "./pages/Index";
@@ -24,12 +25,15 @@ import OrderTrackingPage from "./pages/OrderTracking";
 import NotFound from "./pages/NotFound";
 import { Helmet } from "react-helmet-async";
 import { HelmetProvider } from "react-helmet-async";
+import { Suspense } from "react";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 5 * 60 * 1000,
       retry: 3,
+      refetchOnWindowFocus: false, // Prevent unnecessary refetches
     },
   },
 });
@@ -74,24 +78,29 @@ const App = () => (
               <Toaster />
               <Sonner />
               <BrowserRouter>
+                <NavigationControl />
                 <div className="min-h-screen flex flex-col">
                   <Navbar />
                   <main className="flex-1">
-                    <Routes>
-                      <Route path="/" element={<Index />} />
-                      <Route path="/shop" element={<Shop />} />
-                      <Route path="/product/:id" element={<ProductDetail />} />
-                      <Route path="/cart" element={<Cart />} />
-                      <Route path="/checkout" element={<Checkout />} />
-                      <Route path="/login" element={<Login />} />
-                      <Route path="/register" element={<Register />} />
-                      <Route path="/dashboard" element={<Dashboard />} />
-                      <Route path="/sell" element={<Sell />} />
-                      <Route path="/returns" element={<Returns />} />
-                      <Route path="/returns/new" element={<NewReturn />} />
-                      <Route path="/order/:orderId" element={<OrderTrackingPage />} />
-                      <Route path="*" element={<NotFound />} />
-                    </Routes>
+                    <Suspense fallback={<LoadingSpinner size="lg" text="Loading page..." />}>
+                      <Routes>
+                        <Route path="/" element={<Index />} />
+                        <Route path="/shop" element={<Shop />} />
+                        <Route path="/product/:id" element={<ProductDetail />} />
+                        <Route path="/cart" element={<Cart />} />
+                        <Route path="/checkout" element={<Checkout />} />
+                        <Route path="/login" element={<Login />} />
+                        <Route path="/register" element={<Register />} />
+                        <Route path="/dashboard" element={<Dashboard />} />
+                        <Route path="/sell" element={<Sell />} />
+                        <Route path="/returns" element={<Returns />} />
+                        <Route path="/returns/new" element={<NewReturn />} />
+                        <Route path="/order/:orderId" element={<OrderTrackingPage />} />
+                        <Route path="/404" element={<NotFound />} />
+                        {/* Catch-all route for unknown paths */}
+                        <Route path="*" element={<Navigate to="/404" replace />} />
+                      </Routes>
+                    </Suspense>
                   </main>
                   <Footer />
                 </div>

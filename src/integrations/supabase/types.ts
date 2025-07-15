@@ -56,27 +56,30 @@ export type Database = {
       categories: {
         Row: {
           created_at: string | null
+          deleted_at: string | null
           description: string | null
           id: string
-          image_url: string | null
           name: string
           slug: string
+          updated_at: string | null
         }
         Insert: {
           created_at?: string | null
+          deleted_at?: string | null
           description?: string | null
           id?: string
-          image_url?: string | null
           name: string
           slug: string
+          updated_at?: string | null
         }
         Update: {
           created_at?: string | null
+          deleted_at?: string | null
           description?: string | null
           id?: string
-          image_url?: string | null
           name?: string
           slug?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -177,13 +180,6 @@ export type Database = {
           weight?: number | null
         }
         Relationships: [
-          {
-            foreignKeyName: "items_category_id_fkey"
-            columns: ["category_id"]
-            isOneToOne: false
-            referencedRelation: "categories"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "items_seller_id_fkey"
             columns: ["seller_id"]
@@ -340,6 +336,68 @@ export type Database = {
             columns: ["buyer_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      products: {
+        Row: {
+          category_id: string | null
+          created_at: string | null
+          deleted_at: string | null
+          description: string | null
+          id: string
+          image_gallery_urls: string[] | null
+          is_active: boolean | null
+          main_image_url: string | null
+          name: string
+          price: number
+          sku: string | null
+          slug: string
+          stock_quantity: number
+          tags: string[] | null
+          updated_at: string | null
+        }
+        Insert: {
+          category_id?: string | null
+          created_at?: string | null
+          deleted_at?: string | null
+          description?: string | null
+          id?: string
+          image_gallery_urls?: string[] | null
+          is_active?: boolean | null
+          main_image_url?: string | null
+          name: string
+          price: number
+          sku?: string | null
+          slug: string
+          stock_quantity: number
+          tags?: string[] | null
+          updated_at?: string | null
+        }
+        Update: {
+          category_id?: string | null
+          created_at?: string | null
+          deleted_at?: string | null
+          description?: string | null
+          id?: string
+          image_gallery_urls?: string[] | null
+          is_active?: boolean | null
+          main_image_url?: string | null
+          name?: string
+          price?: number
+          sku?: string | null
+          slug?: string
+          stock_quantity?: number
+          tags?: string[] | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
             referencedColumns: ["id"]
           },
         ]
