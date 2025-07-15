@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -13,23 +14,20 @@ import { supabase } from '@/integrations/supabase/client';
 import { UploadCloud } from 'lucide-react';
 import ImagePreview from '@/components/ImagePreview';
 
-interface UploadProgress {
-  [key: string]: number;
-}
+type ItemCondition = 'new' | 'like_new' | 'good' | 'fair' | 'poor';
 
 const Sell = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
   const [categoryId, setCategoryId] = useState('');
-  const [condition, setCondition] = useState('');
+  const [condition, setCondition] = useState<ItemCondition>('new');
   const [brand, setBrand] = useState('');
   const [size, setSize] = useState('');
   const [color, setColor] = useState('');
   const [images, setImages] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState<UploadProgress>({});
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -46,23 +44,10 @@ const Sell = () => {
         const file = files[i];
         const fileExt = file.name.split('.').pop();
         const fileName = `${user.id}/${Date.now()}-${i}.${fileExt}`;
-        
-        setUploadProgress((prev) => ({
-          ...prev,
-          [file.name]: 0
-        }));
 
         const { data, error } = await supabase.storage
-          .from('product-images') // Use the correct bucket name
-          .upload(fileName, file, {
-            onUploadProgress: (progress) => {
-              const percentage = (progress.loaded / progress.total) * 100;
-              setUploadProgress((prev) => ({
-                ...prev,
-                [file.name]: percentage
-              }));
-            }
-          });
+          .from('product-images')
+          .upload(fileName, file);
 
         if (error) {
           console.error('Upload error:', error);
@@ -96,7 +81,6 @@ const Sell = () => {
       });
     } finally {
       setIsUploading(false);
-      setUploadProgress({});
     }
   };
 
@@ -124,12 +108,11 @@ const Sell = () => {
     setIsSubmitting(true);
 
     try {
-      // Insert the item
+      // Insert the item - using description as title since items table doesn't have title field
       const { data: itemData, error: itemError } = await supabase
         .from('items')
         .insert({
-          title,
-          description,
+          description: `${title}\n\n${description}`, // Combine title and description
           price: parseFloat(price),
           condition,
           category_id: categoryId,
@@ -177,7 +160,7 @@ const Sell = () => {
       setDescription('');
       setPrice('');
       setCategoryId('');
-      setCondition('');
+      setCondition('new');
       setBrand('');
       setSize('');
       setColor('');
@@ -269,7 +252,7 @@ const Sell = () => {
               </div>
               <div>
                 <Label htmlFor="condition">Condition</Label>
-                <Select value={condition} onValueChange={setCondition} required>
+                <Select value={condition} onValueChange={(value: ItemCondition) => setCondition(value)} required>
                   <SelectTrigger>
                     <SelectValue placeholder="Select condition" />
                   </SelectTrigger>
@@ -333,16 +316,6 @@ const Sell = () => {
                     {isUploading ? 'Uploading...' : 'Upload Images'}
                   </Label>
                 </div>
-
-                {Object.keys(uploadProgress).length > 0 && (
-                  <div>
-                    {Object.entries(uploadProgress).map(([fileName, progress]) => (
-                      <div key={fileName} className="mb-2">
-                        {fileName}: {progress.toFixed(2)}%
-                      </div>
-                    ))}
-                  </div>
-                )}
 
                 {images.length > 0 && (
                   <div className="mt-4">
