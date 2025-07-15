@@ -12,12 +12,12 @@ export const useProducts = (categorySlug?: string, searchTerm?: string) => {
           .from('items')
           .select(`
             *,
-            categories (
+            category:categories!items_category_id_fkey (
               id,
               name,
               slug
             ),
-            profiles (
+            seller:profiles!items_seller_id_fkey (
               id,
               first_name,
               last_name,
@@ -58,6 +58,16 @@ export const useProducts = (categorySlug?: string, searchTerm?: string) => {
             return validConditions.includes(condition) ? condition as 'new' | 'like_new' | 'good' | 'fair' | 'poor' : 'good';
           };
 
+          // Safely handle category data
+          const categoryData = item.category && typeof item.category === 'object' && !Array.isArray(item.category) 
+            ? item.category 
+            : null;
+
+          // Safely handle seller data
+          const sellerData = item.seller && typeof item.seller === 'object' && !Array.isArray(item.seller)
+            ? item.seller
+            : null;
+
           return {
             id: item.id,
             title: item.title || 'Untitled Item',
@@ -73,14 +83,14 @@ export const useProducts = (categorySlug?: string, searchTerm?: string) => {
             is_featured: Boolean(item.is_featured),
             created_at: item.created_at || new Date().toISOString(),
             category: {
-              id: item.categories?.id || '',
-              name: item.categories?.name || 'Uncategorized',
-              slug: item.categories?.slug || 'uncategorized'
+              id: categoryData?.id || '',
+              name: categoryData?.name || 'Uncategorized',
+              slug: categoryData?.slug || 'uncategorized'
             },
             seller: {
-              id: item.profiles?.id || '',
-              full_name: `${item.profiles?.first_name || ''} ${item.profiles?.last_name || ''}`.trim() || item.profiles?.username || 'Unknown Seller',
-              username: item.profiles?.username || 'unknown'
+              id: sellerData?.id || '',
+              full_name: `${sellerData?.first_name || ''} ${sellerData?.last_name || ''}`.trim() || sellerData?.username || 'Unknown Seller',
+              username: sellerData?.username || 'unknown'
             }
           } as Product;
         }) || [];
@@ -105,12 +115,12 @@ export const useProduct = (id: string) => {
           .from('items')
           .select(`
             *,
-            categories (
+            category:categories!items_category_id_fkey (
               id,
               name,
               slug
             ),
-            profiles (
+            seller:profiles!items_seller_id_fkey (
               id,
               first_name,
               last_name,
@@ -144,6 +154,16 @@ export const useProduct = (id: string) => {
           return validConditions.includes(condition) ? condition as 'new' | 'like_new' | 'good' | 'fair' | 'poor' : 'good';
         };
 
+        // Safely handle category data
+        const categoryData = data.category && typeof data.category === 'object' && !Array.isArray(data.category) 
+          ? data.category 
+          : null;
+
+        // Safely handle seller data
+        const sellerData = data.seller && typeof data.seller === 'object' && !Array.isArray(data.seller)
+          ? data.seller
+          : null;
+
         const transformedData = {
           id: data.id,
           title: data.title || 'Untitled Item',
@@ -159,14 +179,14 @@ export const useProduct = (id: string) => {
           is_featured: Boolean(data.is_featured),
           created_at: data.created_at || new Date().toISOString(),
           category: {
-            id: data.categories?.id || '',
-            name: data.categories?.name || 'Uncategorized',
-            slug: data.categories?.slug || 'uncategorized'
+            id: categoryData?.id || '',
+            name: categoryData?.name || 'Uncategorized',
+            slug: categoryData?.slug || 'uncategorized'
           },
           seller: {
-            id: data.profiles?.id || '',
-            full_name: `${data.profiles?.first_name || ''} ${data.profiles?.last_name || ''}`.trim() || data.profiles?.username || 'Unknown Seller',
-            username: data.profiles?.username || 'unknown'
+            id: sellerData?.id || '',
+            full_name: `${sellerData?.first_name || ''} ${sellerData?.last_name || ''}`.trim() || sellerData?.username || 'Unknown Seller',
+            username: sellerData?.username || 'unknown'
           }
         } as Product;
 
