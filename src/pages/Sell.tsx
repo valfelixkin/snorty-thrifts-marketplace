@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -94,7 +93,7 @@ const Sell = () => {
       return;
     }
 
-    if (!title || !description || !price || !categoryId || !condition) {
+    if (!title || !description || !price || !categoryId) {
       toast({
         title: "Missing Information",
         description: "Please fill in all required fields",
@@ -106,24 +105,19 @@ const Sell = () => {
     setIsSubmitting(true);
 
     try {
-      // Insert the product
+      // Insert the product using only the fields that exist in the current schema
       const { data: productData, error: productError } = await supabase
         .from('products')
         .insert({
-          name: title,
-          title: title,
+          name: title, // Use title as name since that's what the DB expects
           description: description,
           price: parseFloat(price),
-          condition: condition,
           category_id: categoryId,
           seller_id: user.id,
-          brand: brand || null,
-          size: size || null,
-          color: color || null,
           is_active: true,
-          is_available: true,
-          is_featured: false,
-          main_image_url: images[0] || null
+          main_image_url: images[0] || null,
+          // Note: condition, brand, size, color, is_available, is_featured are not in current schema
+          // so we're not including them in the insert
         })
         .select()
         .single();
@@ -251,9 +245,11 @@ const Sell = () => {
                   </SelectContent>
                 </Select>
               </div>
+              
+              {/* Keep these fields for UI consistency but note they won't be saved to DB */}
               <div>
                 <Label htmlFor="condition">Condition</Label>
-                <Select value={condition} onValueChange={(value: 'new' | 'like_new' | 'good' | 'fair' | 'poor') => setCondition(value)} required>
+                <Select value={condition} onValueChange={(value: 'new' | 'like_new' | 'good' | 'fair' | 'poor') => setCondition(value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select condition" />
                   </SelectTrigger>

@@ -66,18 +66,16 @@ export const usePaginatedProducts = ({
           query = query.or(`name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`);
         }
 
-        if (condition && condition !== 'any' && condition !== '') {
-          const validConditions: Product['condition'][] = ['new', 'like_new', 'good', 'fair', 'poor'];
-          if (validConditions.includes(condition as Product['condition'])) {
-            console.log('Applying condition filter:', condition);
-            query = query.eq('condition', condition as Product['condition']);
-          }
-        }
+        // Skip condition and brand filters since they're not in the current schema
+        // if (condition && condition !== 'any' && condition !== '') {
+        //   console.log('Applying condition filter:', condition);
+        //   query = query.eq('condition', condition);
+        // }
 
-        if (brand && brand !== 'any' && brand !== '') {
-          console.log('Applying brand filter:', brand);
-          query = query.eq('brand', brand);
-        }
+        // if (brand && brand !== 'any' && brand !== '') {
+        //   console.log('Applying brand filter:', brand);
+        //   query = query.eq('brand', brand);
+        // }
 
         if (priceRange && Array.isArray(priceRange) && priceRange.length === 2) {
           console.log('Applying price range filter:', priceRange);
@@ -127,16 +125,6 @@ export const usePaginatedProducts = ({
               ? [product.main_image_url]
               : ['/placeholder.svg'];
 
-            // Helper function to safely cast condition with proper type checking
-            const getCondition = (condition: any): Product['condition'] => {
-              const validConditions: Product['condition'][] = ['new', 'like_new', 'good', 'fair', 'poor'];
-              if (typeof condition === 'string' && validConditions.includes(condition as Product['condition'])) {
-                return condition as Product['condition'];
-              }
-              console.warn('Invalid condition found:', condition, 'defaulting to good');
-              return 'good'; // Default fallback
-            };
-
             // Safely handle category data
             const categoryData = product.category && typeof product.category === 'object' && !Array.isArray(product.category) 
               ? product.category 
@@ -149,17 +137,17 @@ export const usePaginatedProducts = ({
 
             const transformedProduct: Product = {
               id: product.id,
-              title: product.title || product.name || 'Untitled Product',
+              title: product.name || 'Untitled Product', // Use name as title
               description: product.description || '',
               price: Number(product.price) || 0,
               original_price: null,
-              condition: getCondition(product.condition),
-              size: product.size || null,
-              brand: product.brand || null,
-              color: product.color || null,
+              condition: 'good' as const, // Default condition
+              size: null, // Not available in current schema
+              brand: null, // Not available in current schema
+              color: null, // Not available in current schema
               images,
-              is_available: Boolean(product.is_available),
-              is_featured: Boolean(product.is_featured),
+              is_available: Boolean(product.is_active), // Use is_active as is_available
+              is_featured: false, // Default since not in current schema
               created_at: product.created_at || new Date().toISOString(),
               category: {
                 id: categoryData?.id || '',
@@ -180,7 +168,7 @@ export const usePaginatedProducts = ({
             // Return a safe fallback product instead of failing completely
             return {
               id: product.id || `error-${index}`,
-              title: product.title || product.name || 'Error Loading Product',
+              title: product.name || 'Error Loading Product',
               description: product.description || 'This product could not be loaded properly',
               price: Number(product.price) || 0,
               original_price: null,

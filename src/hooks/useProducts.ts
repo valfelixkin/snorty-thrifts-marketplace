@@ -73,17 +73,17 @@ export const useProducts = (categorySlug?: string, searchTerm?: string) => {
 
           return {
             id: product.id,
-            title: product.title || product.name || 'Untitled Product',
+            title: product.name || 'Untitled Product', // Use name as title
             description: product.description || '',
             price: Number(product.price) || 0,
             original_price: null,
-            condition: getCondition(product.condition),
-            size: product.size || null,
-            brand: product.brand || null,
-            color: product.color || null,
+            condition: 'good' as const, // Default condition since it's not in DB
+            size: null, // Not available in current schema
+            brand: null, // Not available in current schema
+            color: null, // Not available in current schema
             images,
-            is_available: Boolean(product.is_available),
-            is_featured: Boolean(product.is_featured),
+            is_available: Boolean(product.is_active), // Use is_active as is_available
+            is_featured: false, // Default since not in current schema
             created_at: product.created_at || new Date().toISOString(),
             category: {
               id: categoryData?.id || '',
@@ -155,12 +155,6 @@ export const useProduct = (id: string) => {
           ? [data.main_image_url]
           : ['/placeholder.svg'];
 
-        // Helper function to safely cast condition
-        const getCondition = (condition: any): 'new' | 'like_new' | 'good' | 'fair' | 'poor' => {
-          const validConditions = ['new', 'like_new', 'good', 'fair', 'poor'] as const;
-          return validConditions.includes(condition) ? condition as 'new' | 'like_new' | 'good' | 'fair' | 'poor' : 'good';
-        };
-
         // Safely handle category data
         const categoryData = data.category && typeof data.category === 'object' && !Array.isArray(data.category) 
           ? data.category 
@@ -173,17 +167,17 @@ export const useProduct = (id: string) => {
 
         const transformedData = {
           id: data.id,
-          title: data.title || data.name || 'Untitled Product',
+          title: data.name || 'Untitled Product', // Use name as title
           description: data.description || '',
           price: Number(data.price) || 0,
           original_price: null,
-          condition: getCondition(data.condition),
-          size: data.size || null,
-          brand: data.brand || null,
-          color: data.color || null,
+          condition: 'good' as const, // Default condition
+          size: null, // Not available in current schema
+          brand: null, // Not available in current schema
+          color: null, // Not available in current schema
           images,
-          is_available: Boolean(data.is_available),
-          is_featured: Boolean(data.is_featured),
+          is_available: Boolean(data.is_active), // Use is_active as is_available
+          is_featured: false, // Default since not in current schema
           created_at: data.created_at || new Date().toISOString(),
           category: {
             id: categoryData?.id || '',
