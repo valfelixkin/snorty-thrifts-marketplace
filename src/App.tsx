@@ -8,6 +8,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { CartProvider } from "@/contexts/CartContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { NavigationControl } from "@/components/NavigationControl";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Index from "./pages/Index";
@@ -88,14 +89,41 @@ const App = () => (
                         <Route path="/shop" element={<Shop />} />
                         <Route path="/product/:id" element={<ProductDetail />} />
                         <Route path="/cart" element={<Cart />} />
-                        <Route path="/checkout" element={<Checkout />} />
                         <Route path="/login" element={<Login />} />
                         <Route path="/register" element={<Register />} />
-                        <Route path="/dashboard" element={<Dashboard />} />
-                        <Route path="/sell" element={<Sell />} />
-                        <Route path="/returns" element={<Returns />} />
-                        <Route path="/returns/new" element={<NewReturn />} />
-                        <Route path="/order/:orderId" element={<OrderTrackingPage />} />
+                        
+                        {/* Protected routes */}
+                        <Route path="/checkout" element={
+                          <ProtectedRoute>
+                            <Checkout />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/dashboard" element={
+                          <ProtectedRoute>
+                            <Dashboard />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/sell" element={
+                          <ProtectedRoute>
+                            <Sell />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/returns" element={
+                          <ProtectedRoute>
+                            <Returns />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/returns/new" element={
+                          <ProtectedRoute>
+                            <NewReturn />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/order/:orderId" element={
+                          <ProtectedRoute>
+                            <OrderTrackingPage />
+                          </ProtectedRoute>
+                        } />
+                        
                         <Route path="/404" element={<NotFound />} />
                         {/* Catch-all route for unknown paths */}
                         <Route path="*" element={<Navigate to="/404" replace />} />

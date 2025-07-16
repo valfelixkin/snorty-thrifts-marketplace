@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -13,9 +13,18 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
+  const { user, login, redirectAfterLogin, setRedirectAfterLogin } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  // Redirect authenticated users
+  useEffect(() => {
+    if (user) {
+      const targetPath = redirectAfterLogin || '/dashboard';
+      setRedirectAfterLogin(null); // Clear the redirect after using it
+      navigate(targetPath, { replace: true });
+    }
+  }, [user, redirectAfterLogin, setRedirectAfterLogin, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,7 +45,7 @@ const Login = () => {
         title: "Welcome back!",
         description: "You've been successfully logged in.",
       });
-      navigate('/dashboard');
+      // Navigation will be handled by the useEffect above
     } catch (error) {
       toast({
         title: "Login failed",
@@ -67,7 +76,12 @@ const Login = () => {
             <CardTitle className="text-2xl font-montserrat font-bold text-brand-black">
               Welcome Back
             </CardTitle>
-            <p className="text-gray-600">Sign in to your account</p>
+            <p className="text-gray-600">
+              {redirectAfterLogin 
+                ? `Sign in to continue to ${redirectAfterLogin}` 
+                : "Sign in to your account"
+              }
+            </p>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">

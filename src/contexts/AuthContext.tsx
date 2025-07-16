@@ -13,6 +13,8 @@ interface AuthContextType {
   logout: () => Promise<void>;
   signOut: () => Promise<void>;
   loading: boolean;
+  redirectAfterLogin: string | null;
+  setRedirectAfterLogin: (url: string | null) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -30,6 +32,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [redirectAfterLogin, setRedirectAfterLogin] = useState<string | null>(null);
 
   const fetchUserProfile = async (userId: string) => {
     try {
@@ -126,6 +129,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
+      // Clear redirect after logout
+      setRedirectAfterLogin(null);
     } catch (error) {
       console.error('Logout error:', error);
       throw error;
@@ -143,7 +148,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       register,
       logout,
       signOut,
-      loading
+      loading,
+      redirectAfterLogin,
+      setRedirectAfterLogin
     }}>
       {children}
     </AuthContext.Provider>
