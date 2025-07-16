@@ -25,7 +25,7 @@ export const usePaginatedProducts = ({
   brand
 }: UsePaginatedProductsParams = {}) => {
   return useQuery({
-    queryKey: ['paginated-items', page, pageSize, categoryId, searchTerm, sortBy, priceRange, condition, brand],
+    queryKey: ['paginated-products', page, pageSize, categoryId, searchTerm, sortBy, priceRange, condition, brand],
     queryFn: async () => {
       console.log('Fetching products with params:', {
         page, pageSize, categoryId, searchTerm, sortBy, priceRange, condition, brand
@@ -33,26 +33,27 @@ export const usePaginatedProducts = ({
 
       try {
         let query = supabase
-          .from('items')
+          .from('products')
           .select(`
             *,
-            category:categories!items_category_id_fkey (
+            category:categories!fk_products_category (
               id,
               name,
               slug
             ),
-            seller:profiles!items_seller_id_fkey (
+            seller:profiles!products_seller_id_fkey (
               id,
               first_name,
               last_name,
               username
             ),
-            item_images (
+            product_images (
               image_url,
               is_primary
             )
           `, { count: 'exact' })
-          .eq('is_available', true);
+          .eq('is_active', true)
+          .is('deleted_at', null);
 
         // Apply filters only if they have valid values
         if (categoryId && categoryId !== 'all' && categoryId !== '') {
@@ -62,7 +63,7 @@ export const usePaginatedProducts = ({
 
         if (searchTerm && searchTerm.trim() !== '') {
           console.log('Applying search filter:', searchTerm);
-          query = query.or(`title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`);
+          query = query.or(`name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`);
         }
 
         if (condition && condition !== 'any' && condition !== '') {
@@ -116,12 +117,14 @@ export const usePaginatedProducts = ({
         console.log('Total count:', count);
 
         // Transform the data with better error handling
-        const transformedData = data?.map((item, index) => {
+        const transformedData = data?.map((product, index) => {
           try {
-            console.log(`Transforming item ${index}:`, item);
+            console.log(`Transforming product ${index}:`, product);
 
-            const images = item.item_images?.length > 0 
-              ? item.item_images.map((img: any) => img.image_url).filter(url => url)
+            const images = product.product_images?.length > 0 
+              ? product.product_images.map((img: any) => img.image_url).filter(url => url)
+              : product.main_image_url 
+              ? [product.main_image_url]
               : ['/placeholder.svg'];
 
             // Helper function to safely cast condition with proper type checking
@@ -135,29 +138,29 @@ export const usePaginatedProducts = ({
             };
 
             // Safely handle category data
-            const categoryData = item.category && typeof item.category === 'object' && !Array.isArray(item.category) 
-              ? item.category 
+            const categoryData = product.category && typeof product.category === 'object' && !Array.isArray(product.category) 
+              ? product.category 
               : null;
 
             // Safely handle seller data
-            const sellerData = item.seller && typeof item.seller === 'object' && !Array.isArray(item.seller)
-              ? item.seller
+            const sellerData = product.seller && typeof product.seller === 'object' && !Array.isArray(product.seller)
+              ? product.seller
               : null;
 
-            const transformedItem: Product = {
-              id: item.id,
-              title: item.title || 'Untitled Item',
-              description: item.description || '',
-              price: Number(item.price) || 0,
+            const transformedProduct: Product = {
+              id: product.id,
+              title: product.title || product.name || 'Untitled Product',
+              description: product.description || '',
+              price: Number(product.price) || 0,
               original_price: null,
-              condition: getCondition(item.condition),
-              size: item.size || null,
-              brand: item.brand || null,
-              color: item.color || null,
+              condition: getCondition(product.condition),
+              size: product.size || null,
+              brand: product.brand || null,
+              color: product.color || null,
               images,
-              is_available: Boolean(item.is_available),
-              is_featured: Boolean(item.is_featured),
-              created_at: item.created_at || new Date().toISOString(),
+              is_available: Boolean(product.is_available),
+              is_featured: Boolean(product.is_featured),
+              created_at: product.created_at || new Date().toISOString(),
               category: {
                 id: categoryData?.id || '',
                 name: categoryData?.name || 'Uncategorized',
@@ -170,22 +173,22 @@ export const usePaginatedProducts = ({
               }
             };
 
-            console.log(`Successfully transformed item ${index}:`, transformedItem);
-            return transformedItem;
+            console.log(`Successfully transformed product ${index}:`, transformedProduct);
+            return transformedProduct;
           } catch (transformError) {
-            console.error(`Error transforming item ${index}:`, transformError, item);
-            // Return a safe fallback item instead of failing completely
+            console.error(`Error transforming product ${index}:`, transformError, product);
+            // Return a safe fallback product instead of failing completely
             return {
-              id: item.id || `error-${index}`,
-              title: item.title || 'Error Loading Item',
-              description: item.description || 'This item could not be loaded properly',
-              price: Number(item.price) || 0,
+              id: product.id || `error-${index}`,
+              title: product.title || product.name || 'Error Loading Product',
+              description: product.description || 'This product could not be loaded properly',
+              price: Number(product.price) || 0,
               original_price: null,
               condition: 'good' as Product['condition'],
               size: null,
               brand: null,
               color: null,
-              images: ['/placeholder.svg'],
+              images: product.main_image_url ? [product.main_image_url] : ['/placeholder.svg'],
               is_available: true,
               is_featured: false,
               created_at: new Date().toISOString(),

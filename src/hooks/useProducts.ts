@@ -5,37 +5,38 @@ import { Product } from '@/types';
 
 export const useProducts = (categorySlug?: string, searchTerm?: string) => {
   return useQuery({
-    queryKey: ['items', categorySlug, searchTerm],
+    queryKey: ['products', categorySlug, searchTerm],
     queryFn: async () => {
       try {
         let query = supabase
-          .from('items')
+          .from('products')
           .select(`
             *,
-            category:categories!items_category_id_fkey (
+            category:categories!fk_products_category (
               id,
               name,
               slug
             ),
-            seller:profiles!items_seller_id_fkey (
+            seller:profiles!products_seller_id_fkey (
               id,
               first_name,
               last_name,
               username
             ),
-            item_images (
+            product_images (
               image_url,
               is_primary
             )
           `)
-          .eq('is_available', true);
+          .eq('is_active', true)
+          .is('deleted_at', null);
 
         if (categorySlug) {
           query = query.eq('categories.slug', categorySlug);
         }
 
         if (searchTerm) {
-          query = query.or(`title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`);
+          query = query.or(`name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`);
         }
 
         const { data, error } = await query;
@@ -45,11 +46,13 @@ export const useProducts = (categorySlug?: string, searchTerm?: string) => {
           throw error;
         }
 
-        // Transform the data to match our Product interface with proper error handling
-        const transformedData = data?.map(item => {
-          // Get images from item_images table or fallback to placeholder
-          const images = item.item_images?.length > 0 
-            ? item.item_images.map((img: any) => img.image_url)
+        // Transform the data to match our Product interface
+        const transformedData = data?.map(product => {
+          // Get images from product_images table or fallback to main_image_url or placeholder
+          const images = product.product_images?.length > 0 
+            ? product.product_images.map((img: any) => img.image_url)
+            : product.main_image_url 
+            ? [product.main_image_url]
             : ['/placeholder.svg'];
 
           // Helper function to safely cast condition
@@ -59,29 +62,29 @@ export const useProducts = (categorySlug?: string, searchTerm?: string) => {
           };
 
           // Safely handle category data
-          const categoryData = item.category && typeof item.category === 'object' && !Array.isArray(item.category) 
-            ? item.category 
+          const categoryData = product.category && typeof product.category === 'object' && !Array.isArray(product.category) 
+            ? product.category 
             : null;
 
           // Safely handle seller data
-          const sellerData = item.seller && typeof item.seller === 'object' && !Array.isArray(item.seller)
-            ? item.seller
+          const sellerData = product.seller && typeof product.seller === 'object' && !Array.isArray(product.seller)
+            ? product.seller
             : null;
 
           return {
-            id: item.id,
-            title: item.title || 'Untitled Item',
-            description: item.description || '',
-            price: Number(item.price) || 0,
+            id: product.id,
+            title: product.title || product.name || 'Untitled Product',
+            description: product.description || '',
+            price: Number(product.price) || 0,
             original_price: null,
-            condition: getCondition(item.condition),
-            size: item.size || null,
-            brand: item.brand || null,
-            color: item.color || null,
+            condition: getCondition(product.condition),
+            size: product.size || null,
+            brand: product.brand || null,
+            color: product.color || null,
             images,
-            is_available: Boolean(item.is_available),
-            is_featured: Boolean(item.is_featured),
-            created_at: item.created_at || new Date().toISOString(),
+            is_available: Boolean(product.is_available),
+            is_featured: Boolean(product.is_featured),
+            created_at: product.created_at || new Date().toISOString(),
             category: {
               id: categoryData?.id || '',
               name: categoryData?.name || 'Uncategorized',
@@ -108,30 +111,32 @@ export const useProducts = (categorySlug?: string, searchTerm?: string) => {
 
 export const useProduct = (id: string) => {
   return useQuery({
-    queryKey: ['item', id],
+    queryKey: ['product', id],
     queryFn: async () => {
       try {
         const { data, error } = await supabase
-          .from('items')
+          .from('products')
           .select(`
             *,
-            category:categories!items_category_id_fkey (
+            category:categories!fk_products_category (
               id,
               name,
               slug
             ),
-            seller:profiles!items_seller_id_fkey (
+            seller:profiles!products_seller_id_fkey (
               id,
               first_name,
               last_name,
               username
             ),
-            item_images (
+            product_images (
               image_url,
               is_primary
             )
           `)
           .eq('id', id)
+          .eq('is_active', true)
+          .is('deleted_at', null)
           .single();
 
         if (error) {
@@ -143,9 +148,11 @@ export const useProduct = (id: string) => {
           throw new Error('Product not found');
         }
 
-        // Get images from item_images table or fallback to placeholder
-        const images = data.item_images?.length > 0 
-          ? data.item_images.map((img: any) => img.image_url)
+        // Get images from product_images table or fallback to main_image_url or placeholder
+        const images = data.product_images?.length > 0 
+          ? data.product_images.map((img: any) => img.image_url)
+          : data.main_image_url 
+          ? [data.main_image_url]
           : ['/placeholder.svg'];
 
         // Helper function to safely cast condition
@@ -166,7 +173,7 @@ export const useProduct = (id: string) => {
 
         const transformedData = {
           id: data.id,
-          title: data.title || 'Untitled Item',
+          title: data.title || data.name || 'Untitled Product',
           description: data.description || '',
           price: Number(data.price) || 0,
           original_price: null,

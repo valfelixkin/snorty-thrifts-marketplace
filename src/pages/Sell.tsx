@@ -13,16 +13,13 @@ import { useCategories } from '@/hooks/useCategories';
 import { supabase } from '@/integrations/supabase/client';
 import { UploadCloud } from 'lucide-react';
 import ImagePreview from '@/components/ImagePreview';
-import { Database } from '@/integrations/supabase/types';
-
-type ItemCondition = Database['public']['Enums']['item_condition'];
 
 const Sell = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
   const [categoryId, setCategoryId] = useState('');
-  const [condition, setCondition] = useState<ItemCondition>('new');
+  const [condition, setCondition] = useState<'new' | 'like_new' | 'good' | 'fair' | 'poor'>('good');
   const [brand, setBrand] = useState('');
   const [size, setSize] = useState('');
   const [color, setColor] = useState('');
@@ -109,10 +106,11 @@ const Sell = () => {
     setIsSubmitting(true);
 
     try {
-      // Insert the item with both title and description
-      const { data: itemData, error: itemError } = await supabase
-        .from('items')
+      // Insert the product
+      const { data: productData, error: productError } = await supabase
+        .from('products')
         .insert({
+          name: title,
           title: title,
           description: description,
           price: parseFloat(price),
@@ -122,39 +120,40 @@ const Sell = () => {
           brand: brand || null,
           size: size || null,
           color: color || null,
+          is_active: true,
           is_available: true,
-          is_featured: false
+          is_featured: false,
+          main_image_url: images[0] || null
         })
         .select()
         .single();
 
-      if (itemError) {
-        console.error('Item creation error:', itemError);
-        throw itemError;
+      if (productError) {
+        console.error('Product creation error:', productError);
+        throw productError;
       }
 
       // Insert images if any
       if (images.length > 0) {
         const imageInserts = images.map((imageUrl, index) => ({
-          item_id: itemData.id,
+          product_id: productData.id,
           image_url: imageUrl,
-          is_primary: index === 0, // First image is primary
-          sort_order: index
+          is_primary: index === 0
         }));
 
         const { error: imageError } = await supabase
-          .from('item_images')
+          .from('product_images')
           .insert(imageInserts);
 
         if (imageError) {
           console.error('Image insertion error:', imageError);
-          // Don't throw here as the item was created successfully
+          // Don't throw here as the product was created successfully
         }
       }
 
       toast({
-        title: "Item Listed Successfully!",
-        description: "Your item has been added to the marketplace",
+        title: "Product Listed Successfully!",
+        description: "Your product has been added to the marketplace",
       });
 
       // Reset form
@@ -162,7 +161,7 @@ const Sell = () => {
       setDescription('');
       setPrice('');
       setCategoryId('');
-      setCondition('new');
+      setCondition('good');
       setBrand('');
       setSize('');
       setColor('');
@@ -172,7 +171,7 @@ const Sell = () => {
       console.error('Submission error:', error);
       toast({
         title: "Listing Failed",
-        description: "Failed to list your item. Please try again.",
+        description: "Failed to list your product. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -200,7 +199,7 @@ const Sell = () => {
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <Card>
           <CardHeader>
-            <CardTitle className="text-2xl font-bold">List a New Item</CardTitle>
+            <CardTitle className="text-2xl font-bold">List a New Product</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -254,7 +253,7 @@ const Sell = () => {
               </div>
               <div>
                 <Label htmlFor="condition">Condition</Label>
-                <Select value={condition} onValueChange={(value: ItemCondition) => setCondition(value)} required>
+                <Select value={condition} onValueChange={(value: 'new' | 'like_new' | 'good' | 'fair' | 'poor') => setCondition(value)} required>
                   <SelectTrigger>
                     <SelectValue placeholder="Select condition" />
                   </SelectTrigger>
@@ -327,7 +326,7 @@ const Sell = () => {
               </div>
 
               <Button disabled={isSubmitting} className="w-full gradient-red text-white" type="submit">
-                {isSubmitting ? 'Submitting...' : 'List Item'}
+                {isSubmitting ? 'Submitting...' : 'List Product'}
               </Button>
             </form>
           </CardContent>
