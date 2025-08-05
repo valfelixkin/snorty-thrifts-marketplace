@@ -67,9 +67,10 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// Snorty Thrifts brand colors
-				brand: {
+				// Galaxy theme colors
+				galaxy: {
 					black: '#0a0a0a',
+					'black-deep': '#020202',
 					red: {
 						50: '#fef2f2',
 						100: '#fee2e2',
@@ -82,6 +83,10 @@ export default {
 						800: '#991b1b',
 						900: '#7f1d1d',
 					},
+					glow: {
+						red: '#ff6b6b',
+						'red-intense': '#ff4757',
+					}
 				}
 			},
 			borderRadius: {
