@@ -69,7 +69,7 @@ export default {
 				},
 				// Galaxy theme colors
 				galaxy: {
-					black: '#0a0a0a',
+					black: '#050505',
 					'black-deep': '#020202',
 					red: {
 						50: '#fef2f2',
@@ -83,9 +83,23 @@ export default {
 						800: '#991b1b',
 						900: '#7f1d1d',
 					},
-					glow: {
-						red: '#ff6b6b',
-						'red-intense': '#ff4757',
+					purple: {
+						50: '#faf5ff',
+						100: '#f3e8ff',
+						200: '#e9d5ff',
+						300: '#d8b4fe',
+						400: '#c084fc',
+						500: '#a855f7',
+						600: '#9333ea',
+						700: '#7c3aed',
+						800: '#6b21a8',
+						900: '#581c87',
+					},
+					cosmic: {
+						red: '#ff4757',
+						purple: '#9c88ff',
+						'purple-deep': '#5f27cd',
+						glow: '#ff6b9d',
 					}
 				}
 			},

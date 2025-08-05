@@ -36,7 +36,7 @@ export const useProducts = (categorySlug?: string, searchTerm?: string) => {
         }
 
         if (searchTerm) {
-          query = query.or(`name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`);
+          query = query.or(`title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`);
         }
 
         const { data, error } = await query;
@@ -73,7 +73,7 @@ export const useProducts = (categorySlug?: string, searchTerm?: string) => {
 
           return {
             id: product.id,
-            title: product.name || 'Untitled Product', // Use name as title
+            title: (product as any).title || 'Untitled Product', // Use title from database
             description: product.description || '',
             price: Number(product.price) || 0,
             original_price: null,
@@ -167,7 +167,7 @@ export const useProduct = (id: string) => {
 
         const transformedData = {
           id: data.id,
-          title: data.name || 'Untitled Product', // Use name as title
+          title: (data as any).title || 'Untitled Product', // Use title from database
           description: data.description || '',
           price: Number(data.price) || 0,
           original_price: null,

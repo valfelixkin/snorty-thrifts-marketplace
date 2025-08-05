@@ -9,51 +9,55 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 0 0% 4%;
+    --background: 0 0% 2%;
     --foreground: 0 0% 98%;
 
-    --card: 0 0% 8%;
+    --card: 0 0% 6%;
     --card-foreground: 0 0% 98%;
 
     --popover: 0 0% 8%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 0 85% 55%;
+    --primary: 0 90% 60%;
     --primary-foreground: 0 0% 98%;
 
-    --secondary: 0 0% 12%;
+    --secondary: 270 40% 15%;
     --secondary-foreground: 0 0% 98%;
 
-    --muted: 0 0% 12%;
-    --muted-foreground: 0 0% 65%;
+    --muted: 270 20% 10%;
+    --muted-foreground: 0 0% 70%;
 
-    --accent: 0 85% 45%;
+    --accent: 280 60% 40%;
     --accent-foreground: 0 0% 98%;
 
-    --destructive: 0 85% 55%;
+    --destructive: 0 90% 60%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 0 0% 15%;
-    --input: 0 0% 15%;
-    --ring: 0 85% 55%;
+    --border: 270 30% 12%;
+    --input: 270 30% 12%;
+    --ring: 0 90% 60%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
-    --sidebar-background: 0 0% 6%;
-    --sidebar-foreground: 0 0% 85%;
-    --sidebar-primary: 0 85% 55%;
+    --sidebar-background: 0 0% 4%;
+    --sidebar-foreground: 0 0% 90%;
+    --sidebar-primary: 0 90% 60%;
     --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 0 0% 15%;
-    --sidebar-accent-foreground: 0 0% 85%;
-    --sidebar-border: 0 0% 15%;
-    --sidebar-ring: 0 85% 55%;
+    --sidebar-accent: 270 40% 15%;
+    --sidebar-accent-foreground: 0 0% 90%;
+    --sidebar-border: 270 30% 12%;
+    --sidebar-ring: 0 90% 60%;
 
-    /* Galaxy theme variables */
-    --galaxy-red: 0 85% 55%;
-    --galaxy-red-dark: 0 85% 35%;
-    --galaxy-black: 0 0% 4%;
-    --galaxy-gray: 0 0% 12%;
-    --galaxy-glow: 0 85% 70%;
+    /* Enhanced Galaxy theme variables */
+    --galaxy-red: 0 90% 60%;
+    --galaxy-red-dark: 0 90% 40%;
+    --galaxy-purple: 280 60% 40%;
+    --galaxy-purple-deep: 270 40% 15%;
+    --galaxy-black: 0 0% 2%;
+    --galaxy-gray: 270 20% 8%;
+    --galaxy-glow: 0 90% 75%;
+    --cosmic-gradient: linear-gradient(135deg, hsl(270 40% 8%), hsl(0 90% 20%), hsl(280 60% 15%));
+    --nebula-gradient: linear-gradient(180deg, hsl(0 0% 2%), hsl(270 40% 6%), hsl(0 90% 8%));
   }
 
   .dark {
@@ -109,11 +113,16 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground font-open-sans;
+    @apply bg-background text-foreground font-open-sans dark;
   }
 
   h1, h2, h3, h4, h5, h6 {
     @apply font-montserrat font-bold;
+  }
+
+  /* Ensure dark mode is applied by default */
+  html {
+    @apply dark;
   }
 }
 
@@ -127,26 +136,56 @@ All colors MUST be HSL.
   }
 
   .gradient-galaxy {
-    @apply bg-gradient-to-br from-primary via-accent to-background;
+    @apply bg-gradient-to-br from-primary via-accent to-secondary;
+  }
+
+  .gradient-cosmic {
+    background: var(--cosmic-gradient);
+  }
+
+  .gradient-nebula {
+    background: var(--nebula-gradient);
   }
 
   .galaxy-glow {
     @apply shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/50 transition-shadow duration-300;
   }
 
+  .cosmic-glow {
+    @apply shadow-2xl shadow-accent/40 hover:shadow-accent/60 transition-shadow duration-500;
+  }
+
   .hover-scale {
-    @apply transition-transform duration-200 hover:scale-105;
+    @apply transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-primary/30;
   }
 
   .card-shadow {
-    @apply shadow-lg shadow-primary/10 hover:shadow-xl hover:shadow-primary/20 transition-shadow duration-300;
+    @apply shadow-lg shadow-accent/20 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300;
   }
 
   .galaxy-text-glow {
-    @apply text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent;
+    @apply text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary;
+  }
+
+  .cosmic-text {
+    @apply text-transparent bg-clip-text bg-gradient-to-r from-accent via-primary to-accent;
   }
 
   .galaxy-border {
-    @apply border border-primary/30 hover:border-primary/60 transition-colors duration-300;
+    @apply border border-accent/30 hover:border-primary/60 transition-colors duration-300;
+  }
+
+  .cosmic-border {
+    @apply border border-gradient-to-r from-accent/20 to-primary/20 hover:from-accent/50 hover:to-primary/50 transition-all duration-300;
+  }
+
+  .space-bg {
+    background: radial-gradient(ellipse at center, hsl(270 40% 8%) 0%, hsl(0 0% 2%) 100%);
+  }
+
+  .nebula-bg {
+    background: radial-gradient(circle at 20% 30%, hsl(280 60% 15%) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, hsl(0 90% 15%) 0%, transparent 50%),
+                hsl(0 0% 2%);
   }
 }
