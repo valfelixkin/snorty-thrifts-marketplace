@@ -146,13 +146,13 @@ const Shop = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen py-8 deep-space-bg">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-montserrat font-bold text-brand-black mb-4">
+          <h1 className="text-3xl md:text-4xl font-montserrat font-bold cosmic-text mb-4">
             Shop All Items
           </h1>
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             Discover amazing pre-loved items at unbeatable prices
           </p>
         </div>
@@ -176,13 +176,13 @@ const Shop = () => {
 
         {/* Results Summary */}
         <div className="flex items-center justify-between mb-6">
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             {paginatedData?.totalCount || 0} items found
             {currentPage > 1 && ` (Page ${currentPage} of ${paginatedData?.totalPages || 1})`}
             {debouncedSearchTerm && ` for "${debouncedSearchTerm}"`}
           </p>
           {error && (
-            <div className="text-red-600 text-sm">
+            <div className="text-primary text-sm">
               ⚠️ Error loading products
             </div>
           )}

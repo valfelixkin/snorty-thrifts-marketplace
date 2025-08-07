@@ -10,24 +10,7 @@ export const useProducts = (categorySlug?: string, searchTerm?: string) => {
       try {
         let query = supabase
           .from('products')
-          .select(`
-            *,
-            category:categories!fk_products_category (
-              id,
-              name,
-              slug
-            ),
-            seller:profiles!products_seller_id_fkey (
-              id,
-              first_name,
-              last_name,
-              username
-            ),
-            product_images (
-              image_url,
-              is_primary
-            )
-          `)
+          .select(`*`)
           .eq('is_active', true)
           .is('deleted_at', null);
 
@@ -48,52 +31,34 @@ export const useProducts = (categorySlug?: string, searchTerm?: string) => {
 
         // Transform the data to match our Product interface
         const transformedData = data?.map(product => {
-          // Get images from product_images table or fallback to main_image_url or placeholder
-          const images = product.product_images?.length > 0 
-            ? product.product_images.map((img: any) => img.image_url)
-            : product.main_image_url 
+          // Get images from main_image_url or placeholder
+          const images = product.main_image_url 
             ? [product.main_image_url]
             : ['/placeholder.svg'];
 
-          // Helper function to safely cast condition
-          const getCondition = (condition: any): 'new' | 'like_new' | 'good' | 'fair' | 'poor' => {
-            const validConditions = ['new', 'like_new', 'good', 'fair', 'poor'] as const;
-            return validConditions.includes(condition) ? condition as 'new' | 'like_new' | 'good' | 'fair' | 'poor' : 'good';
-          };
-
-          // Safely handle category data
-          const categoryData = product.category && typeof product.category === 'object' && !Array.isArray(product.category) 
-            ? product.category 
-            : null;
-
-          // Safely handle seller data
-          const sellerData = product.seller && typeof product.seller === 'object' && !Array.isArray(product.seller)
-            ? product.seller
-            : null;
-
           return {
             id: product.id,
-            title: (product as any).title || 'Untitled Product', // Use title from database
+            title: (product as any).name || 'Untitled Product',
             description: product.description || '',
             price: Number(product.price) || 0,
             original_price: null,
-            condition: 'good' as const, // Default condition since it's not in DB
-            size: null, // Not available in current schema
-            brand: null, // Not available in current schema
-            color: null, // Not available in current schema
+            condition: 'good' as const,
+            size: null,
+            brand: null,
+            color: null,
             images,
-            is_available: Boolean(product.is_active), // Use is_active as is_available
-            is_featured: false, // Default since not in current schema
+            is_available: Boolean(product.is_active),
+            is_featured: false,
             created_at: product.created_at || new Date().toISOString(),
             category: {
-              id: categoryData?.id || '',
-              name: categoryData?.name || 'Uncategorized',
-              slug: categoryData?.slug || 'uncategorized'
+              id: '',
+              name: 'General',
+              slug: 'general'
             },
             seller: {
-              id: sellerData?.id || '',
-              full_name: `${sellerData?.first_name || ''} ${sellerData?.last_name || ''}`.trim() || sellerData?.username || 'Unknown Seller',
-              username: sellerData?.username || 'unknown'
+              id: product.seller_id || '',
+              full_name: 'Seller',
+              username: 'seller'
             }
           } as Product;
         }) || [];
@@ -116,24 +81,7 @@ export const useProduct = (id: string) => {
       try {
         const { data, error } = await supabase
           .from('products')
-          .select(`
-            *,
-            category:categories!fk_products_category (
-              id,
-              name,
-              slug
-            ),
-            seller:profiles!products_seller_id_fkey (
-              id,
-              first_name,
-              last_name,
-              username
-            ),
-            product_images (
-              image_url,
-              is_primary
-            )
-          `)
+          .select(`*`)
           .eq('id', id)
           .eq('is_active', true)
           .is('deleted_at', null)
@@ -148,46 +96,34 @@ export const useProduct = (id: string) => {
           throw new Error('Product not found');
         }
 
-        // Get images from product_images table or fallback to main_image_url or placeholder
-        const images = data.product_images?.length > 0 
-          ? data.product_images.map((img: any) => img.image_url)
-          : data.main_image_url 
+        // Get images from main_image_url or placeholder
+        const images = data.main_image_url 
           ? [data.main_image_url]
           : ['/placeholder.svg'];
 
-        // Safely handle category data
-        const categoryData = data.category && typeof data.category === 'object' && !Array.isArray(data.category) 
-          ? data.category 
-          : null;
-
-        // Safely handle seller data
-        const sellerData = data.seller && typeof data.seller === 'object' && !Array.isArray(data.seller)
-          ? data.seller
-          : null;
-
         const transformedData = {
           id: data.id,
-          title: (data as any).title || 'Untitled Product', // Use title from database
+          title: (data as any).name || 'Untitled Product',
           description: data.description || '',
           price: Number(data.price) || 0,
           original_price: null,
-          condition: 'good' as const, // Default condition
-          size: null, // Not available in current schema
-          brand: null, // Not available in current schema
-          color: null, // Not available in current schema
+          condition: 'good' as const,
+          size: null,
+          brand: null,
+          color: null,
           images,
-          is_available: Boolean(data.is_active), // Use is_active as is_available
-          is_featured: false, // Default since not in current schema
+          is_available: Boolean(data.is_active),
+          is_featured: false,
           created_at: data.created_at || new Date().toISOString(),
           category: {
-            id: categoryData?.id || '',
-            name: categoryData?.name || 'Uncategorized',
-            slug: categoryData?.slug || 'uncategorized'
+            id: '',
+            name: 'General',
+            slug: 'general'
           },
           seller: {
-            id: sellerData?.id || '',
-            full_name: `${sellerData?.first_name || ''} ${sellerData?.last_name || ''}`.trim() || sellerData?.username || 'Unknown Seller',
-            username: sellerData?.username || 'unknown'
+            id: data.seller_id || '',
+            full_name: 'Seller',
+            username: 'seller'
           }
         } as Product;
 

@@ -35,22 +35,7 @@ export const usePaginatedProducts = ({
         let query = supabase
           .from('products')
           .select(`
-            *,
-            category:categories!fk_products_category (
-              id,
-              name,
-              slug
-            ),
-            seller:profiles!products_seller_id_fkey (
-              id,
-              first_name,
-              last_name,
-              username
-            ),
-            product_images (
-              image_url,
-              is_primary
-            )
+            *
           `, { count: 'exact' })
           .eq('is_active', true)
           .is('deleted_at', null);
@@ -63,7 +48,7 @@ export const usePaginatedProducts = ({
 
         if (searchTerm && searchTerm.trim() !== '') {
           console.log('Applying search filter:', searchTerm);
-          query = query.or(`name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`);
+          query = query.or(`title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`);
         }
 
         // Skip condition and brand filters since they're not in the current schema
@@ -119,45 +104,33 @@ export const usePaginatedProducts = ({
           try {
             console.log(`Transforming product ${index}:`, product);
 
-            const images = product.product_images?.length > 0 
-              ? product.product_images.map((img: any) => img.image_url).filter(url => url)
-              : product.main_image_url 
+            const images = product.main_image_url 
               ? [product.main_image_url]
               : ['/placeholder.svg'];
 
-            // Safely handle category data
-            const categoryData = product.category && typeof product.category === 'object' && !Array.isArray(product.category) 
-              ? product.category 
-              : null;
-
-            // Safely handle seller data
-            const sellerData = product.seller && typeof product.seller === 'object' && !Array.isArray(product.seller)
-              ? product.seller
-              : null;
-
             const transformedProduct: Product = {
               id: product.id,
-              title: product.name || 'Untitled Product', // Use name as title
+              title: (product as any).name || 'Untitled Product',
               description: product.description || '',
               price: Number(product.price) || 0,
               original_price: null,
-              condition: 'good' as const, // Default condition
-              size: null, // Not available in current schema
-              brand: null, // Not available in current schema
-              color: null, // Not available in current schema
+              condition: 'good' as const,
+              size: null,
+              brand: null,
+              color: null,
               images,
-              is_available: Boolean(product.is_active), // Use is_active as is_available
-              is_featured: false, // Default since not in current schema
+              is_available: Boolean(product.is_active),
+              is_featured: false,
               created_at: product.created_at || new Date().toISOString(),
               category: {
-                id: categoryData?.id || '',
-                name: categoryData?.name || 'Uncategorized',
-                slug: categoryData?.slug || 'uncategorized'
+                id: '',
+                name: 'General',
+                slug: 'general'
               },
               seller: {
-                id: sellerData?.id || '',
-                full_name: `${sellerData?.first_name || ''} ${sellerData?.last_name || ''}`.trim() || sellerData?.username || 'Unknown Seller',
-                username: sellerData?.username || 'unknown'
+                id: product.seller_id || '',
+                full_name: 'Seller',
+                username: 'seller'
               }
             };
 
@@ -168,7 +141,7 @@ export const usePaginatedProducts = ({
             // Return a safe fallback product instead of failing completely
             return {
               id: product.id || `error-${index}`,
-              title: product.name || 'Error Loading Product',
+              title: (product as any).name || 'Error Loading Product',
               description: product.description || 'This product could not be loaded properly',
               price: Number(product.price) || 0,
               original_price: null,

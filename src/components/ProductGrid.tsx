@@ -23,15 +23,15 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products, isLoading, error })
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {Array.from({ length: 12 }).map((_, i) => (
-          <Card key={i} className="animate-pulse">
-            <div className="bg-gray-200 h-48 rounded-t-lg"></div>
+          <Card key={i} className="animate-pulse nebula-card">
+            <div className="bg-cosmic-dust h-48 rounded-t-lg"></div>
             <CardContent className="p-4">
-              <div className="bg-gray-200 h-4 rounded mb-2"></div>
-              <div className="bg-gray-200 h-3 rounded mb-3 w-3/4"></div>
-              <div className="bg-gray-200 h-4 rounded w-1/2"></div>
+              <div className="bg-cosmic-dust h-4 rounded mb-2"></div>
+              <div className="bg-cosmic-dust h-3 rounded mb-3 w-3/4"></div>
+              <div className="bg-cosmic-dust h-4 rounded w-1/2"></div>
             </CardContent>
             <CardFooter className="p-4 pt-0">
-              <div className="bg-gray-200 h-10 rounded w-full"></div>
+              <div className="bg-cosmic-dust h-10 rounded w-full"></div>
             </CardFooter>
           </Card>
         ))}
@@ -43,12 +43,12 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products, isLoading, error })
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center py-12 px-4">
-        <AlertCircle className="w-16 h-16 text-red-500 mb-4" />
-        <h3 className="text-xl font-semibold text-gray-900 mb-2">Error Loading Products</h3>
-        <p className="text-gray-600 text-center mb-4 max-w-md">
+        <AlertCircle className="w-16 h-16 text-primary mb-4" />
+        <h3 className="text-xl font-semibold text-foreground mb-2">Error Loading Products</h3>
+        <p className="text-muted-foreground text-center mb-4 max-w-md">
           {error.message || 'Something went wrong while loading products. Please try again.'}
         </p>
-        <Button onClick={() => window.location.reload()} variant="outline">
+        <Button onClick={() => window.location.reload()} className="nebula-button">
           <Loader2 className="w-4 h-4 mr-2" />
           Try Again
         </Button>
@@ -60,18 +60,18 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products, isLoading, error })
   if (!products || products.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 px-4">
-        <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center mb-4">
-          <Star className="w-12 h-12 text-gray-400" />
+        <div className="w-24 h-24 bg-cosmic-dust rounded-full flex items-center justify-center mb-4 red-glow">
+          <Star className="w-12 h-12 text-primary" />
         </div>
-        <h3 className="text-xl font-semibold text-gray-900 mb-2">No Products Found</h3>
-        <p className="text-gray-600 text-center mb-6 max-w-md">
+        <h3 className="text-xl font-semibold text-foreground mb-2">No Products Found</h3>
+        <p className="text-muted-foreground text-center mb-6 max-w-md">
           We couldn't find any products matching your criteria. Try adjusting your filters or search terms.
         </p>
         <div className="flex gap-3">
           <Button variant="outline" onClick={() => window.location.reload()}>
             Refresh Page
           </Button>
-          <Button asChild>
+          <Button asChild className="nebula-button">
             <Link to="/sell">List Your Item</Link>
           </Button>
         </div>
@@ -86,7 +86,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products, isLoading, error })
         console.log('Rendering product:', product.id, product.title);
         
         return (
-          <Card key={product.id} className="group hover:shadow-lg transition-shadow duration-200">
+          <Card key={product.id} className="group nebula-card star-shimmer">
             <div className="relative">
               <img
                 src={product.images?.[0] || '/placeholder.svg'}
@@ -99,38 +99,38 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products, isLoading, error })
               />
               <WishlistButton
                 productId={product.id}
-                className="absolute top-2 right-2 bg-white/80 hover:bg-white"
+                className="absolute top-2 right-2 bg-card/80 hover:bg-card red-glow"
               />
-              <Badge className="absolute top-2 left-2 bg-brand-red-600 text-white">
+              <Badge className="absolute top-2 left-2 bg-primary text-primary-foreground">
                 {product.condition?.replace('_', ' ') || 'good'}
               </Badge>
             </div>
             <CardContent className="p-4">
-              <h3 className="font-montserrat font-semibold text-brand-black mb-2 line-clamp-2">
+              <h3 className="font-montserrat font-semibold text-foreground mb-2 line-clamp-2">
                 {product.title}
               </h3>
-              <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+              <p className="text-muted-foreground text-sm mb-3 line-clamp-2">
                 {product.description}
               </p>
               <div className="flex items-center gap-2 mb-2">
-                <span className="font-bold text-brand-red-600">
+                <span className="font-bold cosmic-text text-lg">
                   {formatPrice(product.price)}
                 </span>
                 {product.original_price && (
-                  <span className="text-gray-400 line-through text-sm">
+                  <span className="text-muted-foreground line-through text-sm">
                     {formatPrice(product.original_price)}
                   </span>
                 )}
               </div>
-              <div className="flex items-center gap-1 text-sm text-gray-500">
-                <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+              <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                <Star className="w-3 h-3 fill-primary text-primary" />
                 <span>4.5</span>
                 <span>•</span>
                 <span>{product.seller?.username || 'Anonymous'}</span>
               </div>
             </CardContent>
             <CardFooter className="p-4 pt-0">
-              <Button asChild className="w-full gradient-red text-white">
+              <Button asChild className="w-full nebula-button">
                 <Link to={`/product/${product.id}`}>View Details</Link>
               </Button>
             </CardFooter>

@@ -67,40 +67,16 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// Galaxy theme colors
-				galaxy: {
-					black: '#050505',
-					'black-deep': '#020202',
-					red: {
-						50: '#fef2f2',
-						100: '#fee2e2',
-						200: '#fecaca',
-						300: '#fca5a5',
-						400: '#f87171',
-						500: '#ef4444',
-						600: '#dc2626',
-						700: '#b91c1c',
-						800: '#991b1b',
-						900: '#7f1d1d',
-					},
-					purple: {
-						50: '#faf5ff',
-						100: '#f3e8ff',
-						200: '#e9d5ff',
-						300: '#d8b4fe',
-						400: '#c084fc',
-						500: '#a855f7',
-						600: '#9333ea',
-						700: '#7c3aed',
-						800: '#6b21a8',
-						900: '#581c87',
-					},
-					cosmic: {
-						red: '#ff4757',
-						purple: '#9c88ff',
-						'purple-deep': '#5f27cd',
-						glow: '#ff6b9d',
-					}
+				// Nebula Space Theme
+				'deep-space': 'hsl(var(--deep-space))',
+				'void-black': 'hsl(var(--void-black))',
+				'star-silver': 'hsl(var(--star-silver))',
+				'cosmic-dust': 'hsl(var(--cosmic-dust))',
+				nebula: {
+					red: 'hsl(var(--nebula-red))',
+					'red-bright': 'hsl(var(--nebula-red-bright))',
+					'red-dark': 'hsl(var(--nebula-red-dark))',
+					crimson: 'hsl(var(--nebula-crimson))',
 				}
 			},
 			borderRadius: {
