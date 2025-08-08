@@ -33,7 +33,7 @@ const Index = () => {
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div className="text-center">
               <h1 className="text-4xl md:text-6xl font-montserrat font-bold mb-6 cosmic-text">
-                Snorty Thrifts Galaxy
+                Snorty Thrifts Marketplace
               </h1>
               <p className="text-xl md:text-2xl mb-8 opacity-90 text-gray-100">
                 Discover cosmic deals in the universe of pre-loved treasures
@@ -42,7 +42,7 @@ const Index = () => {
                 <Button asChild size="lg" className="gradient-galaxy text-white cosmic-glow hover-scale">
                   <Link to="/shop">
                     <ShoppingBag className="mr-2 h-5 w-5" />
-                    Explore Galaxy
+                    Explore Marketplace
                   </Link>
                 </Button>
                 <Button asChild size="lg" className="galaxy-border bg-transparent text-white hover:bg-accent/20">
@@ -61,7 +61,7 @@ const Index = () => {
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-montserrat font-bold text-foreground mb-4">
-                Why Choose Snorty Thrifts Galaxy?
+                Why Choose Snorty Thrifts?
               </h2>
               <p className="text-muted-foreground text-lg">
                 Your portal to cosmic treasures and stellar deals
@@ -105,7 +105,7 @@ const Index = () => {
                   Cosmic Treasures
                 </h2>
                 <p className="text-muted-foreground text-lg">
-                  Discover stellar deals from across the galaxy
+                  Discover stellar deals across the marketplace
                 </p>
               </div>
               <Button asChild className="galaxy-border hover:bg-accent/20">

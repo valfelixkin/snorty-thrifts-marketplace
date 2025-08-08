@@ -36,10 +36,10 @@ const Navbar = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
             <div className="w-10 h-10 gradient-galaxy rounded-lg flex items-center justify-center cosmic-glow">
-              <span className="text-white font-montserrat font-bold text-xl">S</span>
+              <span className="text-white font-montserrat font-bold text-xl">ST</span>
             </div>
             <span className="font-montserrat font-bold text-xl text-foreground">
-              Snorty <span className="text-primary">Galaxy</span>
+              Snorty <span className="text-primary">Thrifts</span>
             </span>
           </Link>
 
@@ -58,7 +58,7 @@ const Navbar = () => {
             <div className="relative w-full">
               <Input
                 type="text"
-                placeholder="Search the galaxy..."
+                placeholder="Search the marketplace..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 pr-4 py-2 w-full bg-secondary/30 border-accent/30 focus:border-primary/60 text-foreground placeholder:text-muted-foreground"
@@ -106,7 +106,7 @@ const Navbar = () => {
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={signOut} className="cursor-pointer text-destructive hover:text-destructive/90">
-                    Exit Galaxy
+                    Sign out
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -116,7 +116,7 @@ const Navbar = () => {
                   <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary">Login</Button>
                 </Link>
                 <Link to="/register">
-                  <Button className="gradient-galaxy text-white cosmic-glow" size="sm">Join Galaxy</Button>
+                  <Button className="gradient-galaxy text-white cosmic-glow" size="sm">Join Snorty Thrifts</Button>
                 </Link>
               </div>
             )}
@@ -138,7 +138,7 @@ const Navbar = () => {
               <div className="relative">
                 <Input
                   type="text"
-                  placeholder="Search the galaxy..."
+                  placeholder="Search the marketplace..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10 pr-4 py-2 w-full bg-secondary/30 border-accent/30"
@@ -177,7 +177,7 @@ const Navbar = () => {
                     className="block px-4 py-2 text-primary hover:bg-secondary/30 rounded"
                     onClick={() => setIsOpen(false)}
                   >
-                    Join Galaxy
+                    Join Snorty Thrifts
                   </Link>
                 </>
               )}
