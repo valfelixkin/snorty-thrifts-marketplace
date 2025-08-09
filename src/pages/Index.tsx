@@ -29,7 +29,7 @@ const Index = () => {
       <div className="min-h-screen nebula-bg">
         {/* Hero Section */}
         <section className="gradient-cosmic text-white py-20 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-accent/10 to-transparent animate-pulse"></div>
+          
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div className="text-center">
               <h1 className="text-4xl md:text-6xl font-montserrat font-bold mb-6 cosmic-text">

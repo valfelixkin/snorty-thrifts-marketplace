@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, ShoppingCart, User, Menu, X, Heart, Plus } from 'lucide-react';
+import { Search, ShoppingCart, User, Menu, X, Heart, Plus, Shirt } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
 import { Button } from '@/components/ui/button';
@@ -35,8 +35,9 @@ const Navbar = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-            <div className="w-10 h-10 gradient-galaxy rounded-lg flex items-center justify-center cosmic-glow">
-              <span className="text-white font-montserrat font-bold text-xl">ST</span>
+            <div className="w-10 h-10 gradient-galaxy rounded-lg flex items-center justify-center cosmic-glow relative overflow-hidden">
+              <Shirt className="w-6 h-6 text-white/90" />
+              <span className="absolute text-white font-montserrat font-extrabold text-sm">S</span>
             </div>
             <span className="font-montserrat font-bold text-xl text-foreground">
               Snorty <span className="text-primary">Thrifts</span>
