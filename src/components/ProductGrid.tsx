@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -8,6 +8,10 @@ import { formatPrice } from '@/lib/utils';
 import { Star, AlertCircle, Loader2 } from 'lucide-react';
 import { Product } from '@/types';
 import WishlistButton from './WishlistButton';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
+import { useCart } from '@/contexts/CartContext';
+import PaymentButton from '@/components/PaymentButton';
 
 interface ProductGridProps {
   products: Product[];
@@ -17,6 +21,33 @@ interface ProductGridProps {
 
 const ProductGrid: React.FC<ProductGridProps> = ({ products, isLoading, error }) => {
   console.log('ProductGrid render:', { productsLength: products?.length, isLoading, error });
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const { addToCart } = useCart();
+
+  const handleAddToCart = (p: Product) => {
+    if (!user) {
+      toast({
+        title: 'Please log in',
+        description: 'Log in to add items to cart',
+        variant: 'destructive',
+      });
+      navigate('/login');
+      return;
+    }
+
+    const item = {
+      id: p.id,
+      title: p.title,
+      price: p.price,
+      image: p.images?.[0] || '/placeholder.svg',
+      seller: p.seller?.full_name || p.seller?.username || 'Seller',
+    };
+
+    addToCart(item);
+    toast({ title: 'Added to cart', description: `${p.title} has been added to your cart` });
+  };
 
   // Loading skeleton
   if (isLoading) {
@@ -130,6 +161,12 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products, isLoading, error })
               </div>
             </CardContent>
             <CardFooter className="p-4 pt-0">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full mb-2">
+                <Button onClick={() => handleAddToCart(product)} className="w-full" variant="secondary">
+                  Add to Cart
+                </Button>
+                <PaymentButton amount={product.price} itemTitle={product.title} />
+              </div>
               <Button asChild className="w-full nebula-button">
                 <Link to={`/product/${product.id}`}>View Details</Link>
               </Button>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Upload, X, Plus, DollarSign, Package, Tag } from 'lucide-react';
+import { Upload, X, Plus, DollarSign, Package, Tag, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -142,6 +142,10 @@ const Sell = () => {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
+          <Button variant="ghost" onClick={() => navigate(-1)} className="mb-4 hover:bg-gray-200">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back
+          </Button>
           <h1 className="text-3xl md:text-4xl font-montserrat font-bold text-brand-black mb-2">
             Sell Your Item
           </h1>
