@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instanciate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "12.2.3 (519615d)"
+    PostgrestVersion: "13.0.4"
   }
   public: {
     Tables: {
@@ -263,58 +263,82 @@ export type Database = {
       }
       products: {
         Row: {
+          brand: string | null
           category_id: string | null
+          color: string | null
+          condition: string | null
           created_at: string | null
           deleted_at: string | null
           description: string | null
           id: string
           image_gallery_urls: string[] | null
           is_active: boolean | null
+          is_available: boolean | null
+          is_featured: boolean | null
           main_image_url: string | null
-          name: string
           price: number
+          profile_id: string | null
           seller_id: string | null
+          size: string | null
           sku: string | null
           slug: string
           stock_quantity: number
           tags: string[] | null
+          title: string
           updated_at: string | null
+          user_id: string | null
         }
         Insert: {
+          brand?: string | null
           category_id?: string | null
+          color?: string | null
+          condition?: string | null
           created_at?: string | null
           deleted_at?: string | null
           description?: string | null
           id?: string
           image_gallery_urls?: string[] | null
           is_active?: boolean | null
+          is_available?: boolean | null
+          is_featured?: boolean | null
           main_image_url?: string | null
-          name: string
           price: number
+          profile_id?: string | null
           seller_id?: string | null
+          size?: string | null
           sku?: string | null
           slug: string
           stock_quantity?: number
           tags?: string[] | null
+          title: string
           updated_at?: string | null
+          user_id?: string | null
         }
         Update: {
+          brand?: string | null
           category_id?: string | null
+          color?: string | null
+          condition?: string | null
           created_at?: string | null
           deleted_at?: string | null
           description?: string | null
           id?: string
           image_gallery_urls?: string[] | null
           is_active?: boolean | null
+          is_available?: boolean | null
+          is_featured?: boolean | null
           main_image_url?: string | null
-          name?: string
           price?: number
+          profile_id?: string | null
           seller_id?: string | null
+          size?: string | null
           sku?: string | null
           slug?: string
           stock_quantity?: number
           tags?: string[] | null
+          title?: string
           updated_at?: string | null
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -332,8 +356,22 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "fk_profile"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "fk_seller"
             columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_user"
+            columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -346,6 +384,168 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      products_scraped: {
+        Row: {
+          "_ni src": string | null
+          _ni_src: string | null
+          bdg: string | null
+          "bdg (2)": string | null
+          bdg_2: string | null
+          "btn href": string | null
+          btn_href: string | null
+          "core href": string | null
+          core_href: string | null
+          created_at: string | null
+          "enhance-certs___certification-wrapper": string | null
+          id: string
+          "img src": string | null
+          img_src: string | null
+          "margin-right-2": string | null
+          mpg: string | null
+          name: string | null
+          old: string | null
+          prc: string | null
+          rev: string | null
+          "search-card-e-abutton href": string | null
+          "search-card-e-abutton__content (2)": string | null
+          "search-card-e-company": string | null
+          "search-card-e-company href": string | null
+          "search-card-e-country-flag__wrapper src": string | null
+          "search-card-e-detail-wrapper href (3)": string | null
+          "search-card-e-icon__certification src": string | null
+          "search-card-e-living href": string | null
+          "search-card-e-market-power-common": string | null
+          "search-card-e-price__discount": string | null
+          "search-card-e-price__original": string | null
+          "search-card-e-price-main": string | null
+          "search-card-e-review": string | null
+          "search-card-e-review (2)": string | null
+          "search-card-e-review (3)": string | null
+          "search-card-e-slider__img src": string | null
+          "search-card-e-slider__link href": string | null
+          "search-card-e-supplier__year": string | null
+          "search-card-e-title": string | null
+          "search-card-e-title (2)": string | null
+          "search-card-e-title (3)": string | null
+          "search-card-e-title (4)": string | null
+          "search-card-e-title (5)": string | null
+          "search-card-e-title (6)": string | null
+          "search-card-m-sale-features__item": string | null
+          "search-card-m-sale-features__item (2)": string | null
+          "searchx-find-similar__img src": string | null
+          spon: string | null
+          stars: string | null
+          "verified-supplier-icon src": string | null
+          "verified-supplier-icon__wrapper href": string | null
+        }
+        Insert: {
+          "_ni src"?: string | null
+          _ni_src?: string | null
+          bdg?: string | null
+          "bdg (2)"?: string | null
+          bdg_2?: string | null
+          "btn href"?: string | null
+          btn_href?: string | null
+          "core href"?: string | null
+          core_href?: string | null
+          created_at?: string | null
+          "enhance-certs___certification-wrapper"?: string | null
+          id?: string
+          "img src"?: string | null
+          img_src?: string | null
+          "margin-right-2"?: string | null
+          mpg?: string | null
+          name?: string | null
+          old?: string | null
+          prc?: string | null
+          rev?: string | null
+          "search-card-e-abutton href"?: string | null
+          "search-card-e-abutton__content (2)"?: string | null
+          "search-card-e-company"?: string | null
+          "search-card-e-company href"?: string | null
+          "search-card-e-country-flag__wrapper src"?: string | null
+          "search-card-e-detail-wrapper href (3)"?: string | null
+          "search-card-e-icon__certification src"?: string | null
+          "search-card-e-living href"?: string | null
+          "search-card-e-market-power-common"?: string | null
+          "search-card-e-price__discount"?: string | null
+          "search-card-e-price__original"?: string | null
+          "search-card-e-price-main"?: string | null
+          "search-card-e-review"?: string | null
+          "search-card-e-review (2)"?: string | null
+          "search-card-e-review (3)"?: string | null
+          "search-card-e-slider__img src"?: string | null
+          "search-card-e-slider__link href"?: string | null
+          "search-card-e-supplier__year"?: string | null
+          "search-card-e-title"?: string | null
+          "search-card-e-title (2)"?: string | null
+          "search-card-e-title (3)"?: string | null
+          "search-card-e-title (4)"?: string | null
+          "search-card-e-title (5)"?: string | null
+          "search-card-e-title (6)"?: string | null
+          "search-card-m-sale-features__item"?: string | null
+          "search-card-m-sale-features__item (2)"?: string | null
+          "searchx-find-similar__img src"?: string | null
+          spon?: string | null
+          stars?: string | null
+          "verified-supplier-icon src"?: string | null
+          "verified-supplier-icon__wrapper href"?: string | null
+        }
+        Update: {
+          "_ni src"?: string | null
+          _ni_src?: string | null
+          bdg?: string | null
+          "bdg (2)"?: string | null
+          bdg_2?: string | null
+          "btn href"?: string | null
+          btn_href?: string | null
+          "core href"?: string | null
+          core_href?: string | null
+          created_at?: string | null
+          "enhance-certs___certification-wrapper"?: string | null
+          id?: string
+          "img src"?: string | null
+          img_src?: string | null
+          "margin-right-2"?: string | null
+          mpg?: string | null
+          name?: string | null
+          old?: string | null
+          prc?: string | null
+          rev?: string | null
+          "search-card-e-abutton href"?: string | null
+          "search-card-e-abutton__content (2)"?: string | null
+          "search-card-e-company"?: string | null
+          "search-card-e-company href"?: string | null
+          "search-card-e-country-flag__wrapper src"?: string | null
+          "search-card-e-detail-wrapper href (3)"?: string | null
+          "search-card-e-icon__certification src"?: string | null
+          "search-card-e-living href"?: string | null
+          "search-card-e-market-power-common"?: string | null
+          "search-card-e-price__discount"?: string | null
+          "search-card-e-price__original"?: string | null
+          "search-card-e-price-main"?: string | null
+          "search-card-e-review"?: string | null
+          "search-card-e-review (2)"?: string | null
+          "search-card-e-review (3)"?: string | null
+          "search-card-e-slider__img src"?: string | null
+          "search-card-e-slider__link href"?: string | null
+          "search-card-e-supplier__year"?: string | null
+          "search-card-e-title"?: string | null
+          "search-card-e-title (2)"?: string | null
+          "search-card-e-title (3)"?: string | null
+          "search-card-e-title (4)"?: string | null
+          "search-card-e-title (5)"?: string | null
+          "search-card-e-title (6)"?: string | null
+          "search-card-m-sale-features__item"?: string | null
+          "search-card-m-sale-features__item (2)"?: string | null
+          "searchx-find-similar__img src"?: string | null
+          spon?: string | null
+          stars?: string | null
+          "verified-supplier-icon src"?: string | null
+          "verified-supplier-icon__wrapper href"?: string | null
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -495,7 +695,10 @@ export type Database = {
       }
     }
     Functions: {
-      [_ in never]: never
+      get_current_user_role: {
+        Args: Record<PropertyKey, never>
+        Returns: Database["public"]["Enums"]["user_role"]
+      }
     }
     Enums: {
       item_condition: "new" | "like_new" | "good" | "fair" | "poor"
