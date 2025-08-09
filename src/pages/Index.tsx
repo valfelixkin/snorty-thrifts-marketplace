@@ -32,7 +32,7 @@ const Index = () => {
           
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div className="text-center">
-              <h1 className="text-4xl md:text-6xl font-montserrat font-bold mb-6 cosmic-text">
+              <h1 className="text-4xl md:text-6xl font-montserrat font-bold mb-6 brand-glow-outline">
                 Snorty Thrifts Marketplace
               </h1>
               <p className="text-xl md:text-2xl mb-8 opacity-90 text-gray-100">

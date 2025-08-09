@@ -85,11 +85,11 @@ const Sell = () => {
     setIsLoading(true);
     try {
       const productData = {
-        name: formData.name,
+        title: formData.name,
         description: formData.description,
         price: parseFloat(formData.price),
         category_id: formData.category_id,
-        seller_id: user.id,
+        user_id: user.id,
         slug: generateSlug(formData.name),
         is_active: true,
         main_image_url: images[0] || '/placeholder.svg',
