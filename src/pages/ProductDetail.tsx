@@ -14,7 +14,7 @@ import { useCart } from '@/contexts/CartContext';
 import WishlistButton from '@/components/WishlistButton';
 import SEOStructuredData from '@/components/SEOStructuredData';
 import { Helmet } from 'react-helmet-async';
-import PaymentButton from '@/components/PaymentButton';
+
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -255,7 +255,7 @@ const ProductDetail = () => {
                   Add to Cart
                 </Button>
 
-                <PaymentButton amount={product.price} itemTitle={product.title} />
+                
                 
                 <div className="grid grid-cols-2 gap-3">
                   <Button variant="outline" className="w-full">
