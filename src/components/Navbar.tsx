@@ -44,18 +44,30 @@ const Navbar = () => {
             </span>
           </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-6">
-            <Link to="/shop" className="text-muted-foreground hover:text-primary transition-colors font-medium">
-              Explore
-            </Link>
-            <Link to="/sell" className="text-muted-foreground hover:text-primary transition-colors font-medium">
-              Sell
-            </Link>
+          {/* Desktop Navigation - Separated with proper spacing */}
+          <div className="hidden md:flex items-center space-x-4 ml-12">
+            <Button 
+              asChild 
+              variant="ghost" 
+              className="text-muted-foreground hover:text-primary hover:bg-primary/10 hover:shadow-lg hover:shadow-primary/20 transition-all duration-300 font-medium px-6 py-2 rounded-lg border border-transparent hover:border-primary/30"
+            >
+              <Link to="/shop">
+                Explore
+              </Link>
+            </Button>
+            <Button 
+              asChild 
+              variant="ghost" 
+              className="text-muted-foreground hover:text-primary hover:bg-primary/10 hover:shadow-lg hover:shadow-primary/20 transition-all duration-300 font-medium px-6 py-2 rounded-lg border border-transparent hover:border-primary/30"
+            >
+              <Link to="/sell">
+                Sell
+              </Link>
+            </Button>
           </div>
 
-          {/* Search Bar */}
-          <form onSubmit={handleSearch} className="hidden md:flex items-center flex-1 max-w-md mx-8">
+          {/* Search Bar - Centered with more space */}
+          <form onSubmit={handleSearch} className="hidden md:flex items-center flex-1 max-w-lg mx-8">
             <div className="relative w-full">
               <Input
                 type="text"
@@ -148,41 +160,60 @@ const Navbar = () => {
               </div>
             </form>
             
-            <div className="space-y-2">
-              <Link
-                to="/shop"
-                className="block px-4 py-2 text-muted-foreground hover:bg-secondary/30 hover:text-primary rounded"
-                onClick={() => setIsOpen(false)}
+            <div className="space-y-2 mb-4">
+              <Button 
+                asChild 
+                variant="ghost" 
+                className="w-full justify-start text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all duration-300"
               >
-                Explore
-              </Link>
-              <Link
-                to="/sell"
-                className="block px-4 py-2 text-muted-foreground hover:bg-secondary/30 hover:text-primary rounded"
-                onClick={() => setIsOpen(false)}
+                <Link
+                  to="/shop"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Explore
+                </Link>
+              </Button>
+              <Button 
+                asChild 
+                variant="ghost" 
+                className="w-full justify-start text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all duration-300"
               >
-                Sell
-              </Link>
+                <Link
+                  to="/sell"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Sell
+                </Link>
+              </Button>
+            </div>
               
-              {!user && (
-                <>
+            {!user && (
+              <div className="space-y-2 pt-4 border-t border-accent/30">
+                <Button 
+                  asChild 
+                  variant="ghost" 
+                  className="w-full justify-start text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all duration-300"
+                >
                   <Link
                     to="/login"
-                    className="block px-4 py-2 text-muted-foreground hover:bg-secondary/30 hover:text-primary rounded"
                     onClick={() => setIsOpen(false)}
                   >
                     Login
                   </Link>
+                </Button>
+                <Button 
+                  asChild 
+                  className="w-full justify-start gradient-galaxy text-white cosmic-glow"
+                >
                   <Link
                     to="/register"
-                    className="block px-4 py-2 text-primary hover:bg-secondary/30 rounded"
                     onClick={() => setIsOpen(false)}
                   >
                     Join Snorty Thrifts
                   </Link>
-                </>
-              )}
-            </div>
+                </Button>
+              </div>
+            )}
           </div>
         )}
       </div>
