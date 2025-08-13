@@ -81,8 +81,8 @@ const App = () => (
               <Toaster />
               <Sonner />
               <BrowserRouter>
-                <NavigationControl />
                 <div className="min-h-screen flex flex-col">
+                  <NavigationControl />
                   <Navbar />
                   <main className="flex-1">
                     <Suspense fallback={<LoadingSpinner size="lg" text="Loading page..." />}>
