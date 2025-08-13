@@ -1,29 +1,41 @@
-
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Mail, Lock, User } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Eye, EyeOff, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
-const Register = () => {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+const ResetPassword = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { register } = useAuth();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Check if we have the necessary parameters for password reset
+    const accessToken = searchParams.get('access_token');
+    const refreshToken = searchParams.get('refresh_token');
+    
+    if (!accessToken || !refreshToken) {
+      toast({
+        title: "Invalid reset link",
+        description: "This password reset link is invalid or has expired.",
+        variant: "destructive",
+      });
+      navigate('/forgot-password');
+    }
+  }, [searchParams, navigate, toast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!name || !email || !password || !confirmPassword) {
+    if (!password || !confirmPassword) {
       toast({
         title: "Error",
         description: "Please fill in all fields",
@@ -52,16 +64,22 @@ const Register = () => {
 
     setIsLoading(true);
     try {
-      await register(name, email, password);
-      toast({
-        title: "Welcome to Snorty Thrifts!",
-        description: "Your account has been created successfully.",
+      const { error } = await supabase.auth.updateUser({
+        password: password
       });
-      navigate('/dashboard');
+
+      if (error) throw error;
+
+      toast({
+        title: "Password updated successfully!",
+        description: "You can now login with your new password.",
+      });
+      
+      navigate('/login');
     } catch (error: any) {
       toast({
-        title: "Registration failed",
-        description: error.message || "Please try again with different details.",
+        title: "Error",
+        description: error.message || "Failed to update password. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -86,51 +104,17 @@ const Register = () => {
         <Card className="shadow-xl">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-montserrat font-bold text-brand-black">
-              Join Snorty Thrifts
+              Reset Your Password
             </CardTitle>
-            <p className="text-gray-600">Create your account to start buying and selling</p>
+            <p className="text-gray-600">
+              Enter your new password below
+            </p>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                  Full Name
-                </label>
-                <div className="relative">
-                  <Input
-                    id="name"
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Enter your full name"
-                    className="pl-10"
-                    required
-                  />
-                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                </div>
-              </div>
-
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                  Email Address
-                </label>
-                <div className="relative">
-                  <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter your email"
-                    className="pl-10"
-                    required
-                  />
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                </div>
-              </div>
-
-              <div>
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                  Password
+                  New Password
                 </label>
                 <div className="relative">
                   <Input
@@ -138,7 +122,7 @@ const Register = () => {
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Create a password"
+                    placeholder="Enter new password"
                     className="pl-10 pr-10"
                     required
                   />
@@ -155,7 +139,7 @@ const Register = () => {
 
               <div>
                 <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
-                  Confirm Password
+                  Confirm New Password
                 </label>
                 <div className="relative">
                   <Input
@@ -163,7 +147,7 @@ const Register = () => {
                     type={showConfirmPassword ? 'text' : 'password'}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Confirm your password"
+                    placeholder="Confirm new password"
                     className="pl-10 pr-10"
                     required
                   />
@@ -178,63 +162,19 @@ const Register = () => {
                 </div>
               </div>
 
-              <div className="flex items-center">
-                <input
-                  id="terms"
-                  name="terms"
-                  type="checkbox"
-                  className="h-4 w-4 text-brand-red-600 focus:ring-brand-red-500 border-gray-300 rounded"
-                  required
-                />
-                <label htmlFor="terms" className="ml-2 block text-sm text-gray-700">
-                  I agree to the{' '}
-                  <a href="#" className="text-brand-red-600 hover:text-brand-red-700">
-                    Terms of Service
-                  </a>{' '}
-                  and{' '}
-                  <a href="#" className="text-brand-red-600 hover:text-brand-red-700">
-                    Privacy Policy
-                  </a>
-                </label>
-              </div>
-
               <Button
                 type="submit"
                 className="w-full gradient-red text-white font-montserrat font-semibold"
                 disabled={isLoading}
               >
-                {isLoading ? 'Creating Account...' : 'Create Account'}
+                {isLoading ? 'Updating Password...' : 'Update Password'}
               </Button>
             </form>
 
             <div className="mt-6 text-center">
-              <p className="text-gray-600">
-                Already have an account?{' '}
-                <Link to="/login" className="text-brand-red-600 hover:text-brand-red-700 font-medium">
-                  Sign in here
-                </Link>
-              </p>
-            </div>
-
-            <div className="mt-6">
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300" />
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white text-gray-500">Or continue with</span>
-                </div>
-              </div>
-              <div className="mt-6 grid grid-cols-2 gap-3">
-                <Button variant="outline" className="w-full">
-                  <img className="w-5 h-5 mr-2" src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" />
-                  Google
-                </Button>
-                <Button variant="outline" className="w-full">
-                  <img className="w-5 h-5 mr-2" src="https://www.svgrepo.com/show/475647/facebook-color.svg" alt="Facebook" />
-                  Facebook
-                </Button>
-              </div>
+              <Link to="/login" className="text-sm text-brand-red-600 hover:text-brand-red-700">
+                Back to Login
+              </Link>
             </div>
           </CardContent>
         </Card>
@@ -243,4 +183,4 @@ const Register = () => {
   );
 };
 
-export default Register;
+export default ResetPassword;

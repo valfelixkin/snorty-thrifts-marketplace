@@ -46,10 +46,10 @@ const Login = () => {
         description: "You've been successfully logged in.",
       });
       // Navigation will be handled by the useEffect above
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Login failed",
-        description: "Please check your credentials and try again.",
+        description: error.message || "Please check your credentials and try again.",
         variant: "destructive",
       });
     } finally {
@@ -140,9 +140,9 @@ const Login = () => {
                     Remember me
                   </label>
                 </div>
-                <a href="#" className="text-sm text-brand-red-600 hover:text-brand-red-700">
+                <Link to="/forgot-password" className="text-sm text-brand-red-600 hover:text-brand-red-700">
                   Forgot password?
-                </a>
+                </Link>
               </div>
 
               <Button

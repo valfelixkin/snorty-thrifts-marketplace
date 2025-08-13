@@ -71,6 +71,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
         return [...prevItems, { ...item, quantity: 1 }];
       });
+      
+      // Trigger a custom event for real-time cart updates
+      window.dispatchEvent(new CustomEvent('cartUpdate', { 
+        detail: { action: 'add', item } 
+      }));
     } catch (error) {
       console.error('Error adding item to cart:', error);
     }
@@ -78,7 +83,14 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const removeFromCart = (id: string) => {
     try {
-      setItems(prevItems => prevItems.filter(item => item.id !== id));
+      setItems(prevItems => {
+        const filteredItems = prevItems.filter(item => item.id !== id);
+        // Trigger a custom event for real-time cart updates
+        window.dispatchEvent(new CustomEvent('cartUpdate', { 
+          detail: { action: 'remove', itemId: id } 
+        }));
+        return filteredItems;
+      });
     } catch (error) {
       console.error('Error removing item from cart:', error);
     }
@@ -90,11 +102,16 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         removeFromCart(id);
         return;
       }
-      setItems(prevItems =>
-        prevItems.map(item =>
+      setItems(prevItems => {
+        const updatedItems = prevItems.map(item =>
           item.id === id ? { ...item, quantity: Math.max(1, quantity) } : item
-        )
-      );
+        );
+        // Trigger a custom event for real-time cart updates
+        window.dispatchEvent(new CustomEvent('cartUpdate', { 
+          detail: { action: 'update', itemId: id, quantity } 
+        }));
+        return updatedItems;
+      });
     } catch (error) {
       console.error('Error updating cart quantity:', error);
     }
@@ -103,6 +120,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const clearCart = () => {
     try {
       setItems([]);
+      // Trigger a custom event for real-time cart updates
+      window.dispatchEvent(new CustomEvent('cartUpdate', { 
+        detail: { action: 'clear' } 
+      }));
     } catch (error) {
       console.error('Error clearing cart:', error);
     }

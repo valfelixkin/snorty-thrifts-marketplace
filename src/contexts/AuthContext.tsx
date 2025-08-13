@@ -98,9 +98,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         password,
       });
       if (error) throw error;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Login error:', error);
-      throw error;
+      // Provide more specific error messages
+      if (error.message?.includes('Invalid login credentials')) {
+        throw new Error('Invalid email or password. Please check your credentials and try again.');
+      } else if (error.message?.includes('Email not confirmed')) {
+        throw new Error('Please check your email and click the confirmation link before signing in.');
+      } else if (error.message?.includes('Too many requests')) {
+        throw new Error('Too many login attempts. Please wait a few minutes before trying again.');
+      }
+      throw new Error(error.message || 'Login failed. Please try again.');
     }
   };
 
@@ -119,9 +127,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       });
       if (error) throw error;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Registration error:', error);
-      throw error;
+      // Provide more specific error messages
+      if (error.message?.includes('User already registered')) {
+        throw new Error('An account with this email already exists. Please use a different email or try logging in.');
+      } else if (error.message?.includes('Password should be at least')) {
+        throw new Error('Password must be at least 6 characters long.');
+      } else if (error.message?.includes('Invalid email')) {
+        throw new Error('Please enter a valid email address.');
+      }
+      throw new Error(error.message || 'Registration failed. Please try again.');
     }
   };
 
