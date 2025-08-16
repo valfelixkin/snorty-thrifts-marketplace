@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, ShoppingCart, User, Menu, X, Heart, Plus, Shirt } from 'lucide-react';
+import { Search, ShoppingCart, User, Menu, X, Heart, Plus, Shirt, MapPin } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
 import { Button } from '@/components/ui/button';
@@ -13,10 +13,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import LocationPicker from '@/components/LocationPicker';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showLocationPicker, setShowLocationPicker] = useState(false);
   const { user, profile, signOut } = useAuth();
   const { totalItems } = useCart();
   const navigate = useNavigate();
@@ -27,6 +29,12 @@ const Navbar = () => {
       navigate(`/shop?search=${encodeURIComponent(searchQuery.trim())}`);
       setSearchQuery('');
     }
+  };
+
+  const handleLocationSelect = (location: { lat: number; lng: number; address: string }) => {
+    // Store location in localStorage or context for use throughout the app
+    localStorage.setItem('userLocation', JSON.stringify(location));
+    console.log('Location selected:', location);
   };
 
   return (
@@ -82,6 +90,16 @@ const Navbar = () => {
 
           {/* Right side icons */}
           <div className="flex items-center space-x-4">
+            {/* Location */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowLocationPicker(true)}
+              className="relative p-2 text-muted-foreground hover:text-primary hover:bg-primary/10 hover:shadow-lg hover:shadow-primary/20 transition-all duration-300"
+            >
+              <MapPin className="w-5 h-5" />
+            </Button>
+
             {/* Cart */}
             <Link to="/cart" className="relative p-2 text-muted-foreground hover:text-primary transition-colors">
               <ShoppingCart className="w-6 h-6" />
@@ -125,12 +143,21 @@ const Navbar = () => {
               </DropdownMenu>
             ) : (
               <div className="hidden md:flex items-center space-x-2">
-                <Link to="/login">
-                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary">Login</Button>
-                </Link>
-                <Link to="/register">
-                  <Button className="gradient-galaxy text-white cosmic-glow" size="sm">Join Snorty Thrifts</Button>
-                </Link>
+                <Button 
+                  asChild 
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-muted-foreground hover:text-primary hover:bg-primary/10 hover:shadow-lg hover:shadow-primary/20 transition-all duration-300 font-medium px-4 py-2 rounded-lg border border-transparent hover:border-primary/30"
+                >
+                  <Link to="/login">Login</Link>
+                </Button>
+                <Button 
+                  asChild 
+                  className="gradient-galaxy text-white cosmic-glow" 
+                  size="sm"
+                >
+                  <Link to="/register">Join Snorty Thrifts</Link>
+                </Button>
               </div>
             )}
 
@@ -217,6 +244,12 @@ const Navbar = () => {
           </div>
         )}
       </div>
+
+      <LocationPicker
+        isOpen={showLocationPicker}
+        onClose={() => setShowLocationPicker(false)}
+        onLocationSelect={handleLocationSelect}
+      />
     </nav>
   );
 };
