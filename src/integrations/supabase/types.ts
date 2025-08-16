@@ -14,6 +14,78 @@ export type Database = {
   }
   public: {
     Tables: {
+      ads: {
+        Row: {
+          advertiser_id: string | null
+          budget: number
+          category: string | null
+          clicks: number | null
+          created_at: string
+          daily_budget: number | null
+          description: string | null
+          end_date: string | null
+          id: string
+          image_url: string | null
+          impressions: number | null
+          is_active: boolean | null
+          location: string | null
+          payment_method: string | null
+          payment_reference: string | null
+          payment_status: string | null
+          start_date: string | null
+          status: string | null
+          target_url: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          advertiser_id?: string | null
+          budget: number
+          category?: string | null
+          clicks?: number | null
+          created_at?: string
+          daily_budget?: number | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          image_url?: string | null
+          impressions?: number | null
+          is_active?: boolean | null
+          location?: string | null
+          payment_method?: string | null
+          payment_reference?: string | null
+          payment_status?: string | null
+          start_date?: string | null
+          status?: string | null
+          target_url: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          advertiser_id?: string | null
+          budget?: number
+          category?: string | null
+          clicks?: number | null
+          created_at?: string
+          daily_budget?: number | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          image_url?: string | null
+          impressions?: number | null
+          is_active?: boolean | null
+          location?: string | null
+          payment_method?: string | null
+          payment_reference?: string | null
+          payment_status?: string | null
+          start_date?: string | null
+          status?: string | null
+          target_url?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       cart_items: {
         Row: {
           created_at: string | null

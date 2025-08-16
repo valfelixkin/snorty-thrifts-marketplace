@@ -9,6 +9,7 @@ import { formatPrice } from '@/lib/utils';
 import WishlistButton from '@/components/WishlistButton';
 import SEOStructuredData from '@/components/SEOStructuredData';
 import { Helmet } from 'react-helmet-async';
+import AdDisplay from '@/components/ads/AdDisplay';
 
 const Index = () => {
   const { data: featuredProducts = [], isLoading } = useProducts();
@@ -113,66 +114,77 @@ const Index = () => {
               </Button>
             </div>
 
-            {isLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {Array.from({ length: 8 }).map((_, i) => (
-                  <div key={i} className="bg-secondary/30 animate-pulse rounded-lg h-80 cosmic-glow"></div>
-                ))}
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+              <div className="lg:col-span-3">
+                {isLoading ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {Array.from({ length: 6 }).map((_, i) => (
+                      <div key={i} className="bg-secondary/30 animate-pulse rounded-lg h-80 cosmic-glow"></div>
+                    ))}
+                  </div>
+                ) : displayProducts.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {displayProducts.map((product) => (
+                      <Card key={product.id} className="group card-shadow hover-scale galaxy-border bg-card/90 backdrop-blur-sm">
+                        <div className="relative overflow-hidden">
+                          <img
+                            src={product.images[0] || '/placeholder.svg'}
+                            alt={product.title}
+                            className="w-full h-48 object-cover rounded-t-lg group-hover:scale-110 transition-transform duration-300"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                          <WishlistButton
+                            productId={product.id}
+                            className="absolute top-2 right-2 bg-card/80 hover:bg-card backdrop-blur-sm"
+                          />
+                          <Badge className="absolute top-2 left-2 gradient-galaxy text-white border-0">
+                            {product.condition}
+                          </Badge>
+                        </div>
+                        <CardContent className="p-4">
+                          <h3 className="font-montserrat font-semibold text-foreground mb-2 line-clamp-2">
+                            {product.title}
+                          </h3>
+                          <p className="text-muted-foreground text-sm mb-3 line-clamp-2">
+                            {product.description}
+                          </p>
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="font-bold text-primary text-lg">
+                              {formatPrice(product.price)}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                            <Star className="w-3 h-3 fill-accent text-accent" />
+                            <span>4.5</span>
+                            <span>•</span>
+                            <span>{product.seller?.username || 'Anonymous'}</span>
+                          </div>
+                        </CardContent>
+                        <CardFooter className="p-4 pt-0">
+                          <Button asChild className="w-full gradient-galaxy text-white cosmic-glow">
+                            <Link to={`/product/${product.id}`}>Explore Treasure</Link>
+                          </Button>
+                        </CardFooter>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <p className="text-muted-foreground text-lg mb-4">No cosmic treasures available yet</p>
+                    <Button asChild className="gradient-galaxy cosmic-glow">
+                      <Link to="/sell">Launch the first treasure!</Link>
+                    </Button>
+                  </div>
+                )}
               </div>
-            ) : displayProducts.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {displayProducts.map((product) => (
-                  <Card key={product.id} className="group card-shadow hover-scale galaxy-border bg-card/90 backdrop-blur-sm">
-                    <div className="relative overflow-hidden">
-                      <img
-                        src={product.images[0] || '/placeholder.svg'}
-                        alt={product.title}
-                        className="w-full h-48 object-cover rounded-t-lg group-hover:scale-110 transition-transform duration-300"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                      <WishlistButton
-                        productId={product.id}
-                        className="absolute top-2 right-2 bg-card/80 hover:bg-card backdrop-blur-sm"
-                      />
-                      <Badge className="absolute top-2 left-2 gradient-galaxy text-white border-0">
-                        {product.condition}
-                      </Badge>
-                    </div>
-                    <CardContent className="p-4">
-                      <h3 className="font-montserrat font-semibold text-foreground mb-2 line-clamp-2">
-                        {product.title}
-                      </h3>
-                      <p className="text-muted-foreground text-sm mb-3 line-clamp-2">
-                        {product.description}
-                      </p>
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="font-bold text-primary text-lg">
-                          {formatPrice(product.price)}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                        <Star className="w-3 h-3 fill-accent text-accent" />
-                        <span>4.5</span>
-                        <span>•</span>
-                        <span>{product.seller?.username || 'Anonymous'}</span>
-                      </div>
-                    </CardContent>
-                    <CardFooter className="p-4 pt-0">
-                      <Button asChild className="w-full gradient-galaxy text-white cosmic-glow">
-                        <Link to={`/product/${product.id}`}>Explore Treasure</Link>
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                ))}
+              <div className="space-y-6">
+                <AdDisplay 
+                  category="general"
+                  maxAds={3}
+                  className="lg:sticky lg:top-8"
+                />
               </div>
-            ) : (
-              <div className="text-center py-12">
-                <p className="text-muted-foreground text-lg mb-4">No cosmic treasures available yet</p>
-                <Button asChild className="gradient-galaxy cosmic-glow">
-                  <Link to="/sell">Launch the first treasure!</Link>
-                </Button>
-              </div>
-            )}
+            </div>
           </div>
         </section>
 

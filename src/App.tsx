@@ -25,6 +25,7 @@ import Sell from "./pages/Sell";
 import Returns from "./pages/Returns";
 import NewReturn from "./pages/NewReturn";
 import OrderTrackingPage from "./pages/OrderTracking";
+import Advertise from "./pages/Advertise";
 import NotFound from "./pages/NotFound";
 import { Helmet } from "react-helmet-async";
 import { HelmetProvider } from "react-helmet-async";
@@ -127,6 +128,7 @@ const App = () => (
                             <OrderTrackingPage />
                           </ProtectedRoute>
                         } />
+                        <Route path="/advertise" element={<Advertise />} />
                         
                         <Route path="/404" element={<NotFound />} />
                         {/* Catch-all route for unknown paths */}

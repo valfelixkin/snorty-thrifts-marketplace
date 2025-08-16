@@ -72,6 +72,15 @@ const Navbar = () => {
                 Sell
               </Link>
             </Button>
+            <Button 
+              asChild 
+              variant="ghost" 
+              className="text-muted-foreground hover:text-primary hover:bg-primary/10 hover:shadow-lg hover:shadow-primary/20 transition-all duration-300 font-medium px-6 py-2 rounded-lg border border-transparent hover:border-primary/30"
+            >
+              <Link to="/advertise">
+                Advertise
+              </Link>
+            </Button>
           </div>
 
           {/* Search Bar - Centered with more space */}
