@@ -335,8 +335,10 @@ export type Database = {
       }
       products: {
         Row: {
+          address: string | null
           brand: string | null
           category_id: string | null
+          city: string | null
           color: string | null
           condition: string | null
           created_at: string | null
@@ -347,9 +349,12 @@ export type Database = {
           is_active: boolean | null
           is_available: boolean | null
           is_featured: boolean | null
+          latitude: number | null
+          longitude: number | null
           main_image_url: string | null
           price: number
           profile_id: string | null
+          region: string | null
           seller_id: string | null
           size: string | null
           sku: string | null
@@ -361,8 +366,10 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          address?: string | null
           brand?: string | null
           category_id?: string | null
+          city?: string | null
           color?: string | null
           condition?: string | null
           created_at?: string | null
@@ -373,9 +380,12 @@ export type Database = {
           is_active?: boolean | null
           is_available?: boolean | null
           is_featured?: boolean | null
+          latitude?: number | null
+          longitude?: number | null
           main_image_url?: string | null
           price: number
           profile_id?: string | null
+          region?: string | null
           seller_id?: string | null
           size?: string | null
           sku?: string | null
@@ -387,8 +397,10 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          address?: string | null
           brand?: string | null
           category_id?: string | null
+          city?: string | null
           color?: string | null
           condition?: string | null
           created_at?: string | null
@@ -399,9 +411,12 @@ export type Database = {
           is_active?: boolean | null
           is_available?: boolean | null
           is_featured?: boolean | null
+          latitude?: number | null
+          longitude?: number | null
           main_image_url?: string | null
           price?: number
           profile_id?: string | null
+          region?: string | null
           seller_id?: string | null
           size?: string | null
           sku?: string | null
@@ -621,46 +636,70 @@ export type Database = {
       }
       profiles: {
         Row: {
+          address: string | null
           avatar_url: string | null
           bio: string | null
+          city: string | null
+          country: string | null
           created_at: string | null
           email: string
           first_name: string | null
           id: string
           is_verified: boolean | null
           last_name: string | null
+          latitude: number | null
           location: string | null
+          location_permissions: string | null
+          location_updated_at: string | null
+          longitude: number | null
           phone: string | null
+          region: string | null
           role: Database["public"]["Enums"]["user_role"] | null
           updated_at: string | null
           username: string | null
         }
         Insert: {
+          address?: string | null
           avatar_url?: string | null
           bio?: string | null
+          city?: string | null
+          country?: string | null
           created_at?: string | null
           email: string
           first_name?: string | null
           id: string
           is_verified?: boolean | null
           last_name?: string | null
+          latitude?: number | null
           location?: string | null
+          location_permissions?: string | null
+          location_updated_at?: string | null
+          longitude?: number | null
           phone?: string | null
+          region?: string | null
           role?: Database["public"]["Enums"]["user_role"] | null
           updated_at?: string | null
           username?: string | null
         }
         Update: {
+          address?: string | null
           avatar_url?: string | null
           bio?: string | null
+          city?: string | null
+          country?: string | null
           created_at?: string | null
           email?: string
           first_name?: string | null
           id?: string
           is_verified?: boolean | null
           last_name?: string | null
+          latitude?: number | null
           location?: string | null
+          location_permissions?: string | null
+          location_updated_at?: string | null
+          longitude?: number | null
           phone?: string | null
+          region?: string | null
           role?: Database["public"]["Enums"]["user_role"] | null
           updated_at?: string | null
           username?: string | null
@@ -767,6 +806,10 @@ export type Database = {
       }
     }
     Functions: {
+      calculate_distance: {
+        Args: { lat1: number; lat2: number; lng1: number; lng2: number }
+        Returns: number
+      }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
         Returns: Database["public"]["Enums"]["user_role"]
