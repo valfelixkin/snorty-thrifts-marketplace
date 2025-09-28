@@ -50,4 +50,13 @@ export interface UserProfile {
   role?: string;
   created_at?: string;
   updated_at?: string;
+  // Location fields
+  latitude?: number;
+  longitude?: number;
+  address?: string;
+  city?: string;
+  region?: string;
+  country?: string;
+  location_permissions?: 'not_requested' | 'granted' | 'denied' | 'manual';
+  location_updated_at?: string;
 }

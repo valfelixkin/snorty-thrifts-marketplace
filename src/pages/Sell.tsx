@@ -10,6 +10,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useCategories } from '@/hooks/useCategories';
+import LocationManager from '@/components/LocationManager';
+import { useGeolocation } from '@/hooks/useGeolocation';
 
 const Sell = () => {
   const [formData, setFormData] = useState({
@@ -21,10 +23,28 @@ const Sell = () => {
   });
   const [images, setImages] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const { user } = useAuth();
+  const [showLocationManager, setShowLocationManager] = useState(false);
+  const [productLocation, setProductLocation] = useState<any>(null);
+  const { user, profile } = useAuth();
+  const { location } = useGeolocation();
   const { toast } = useToast();
   const navigate = useNavigate();
   const { data: categories = [] } = useCategories();
+
+  // Auto-fill location from user profile or current location
+  React.useEffect(() => {
+    if (profile?.latitude && profile?.longitude) {
+      setProductLocation({
+        latitude: profile.latitude,
+        longitude: profile.longitude,
+        address: profile.address,
+        city: profile.city,
+        region: profile.region
+      });
+    } else if (location) {
+      setProductLocation(location);
+    }
+  }, [profile, location]);
 
   const generateSlug = (name: string) => {
     return name
@@ -93,7 +113,13 @@ const Sell = () => {
         slug: generateSlug(formData.name),
         is_active: true,
         main_image_url: images[0] || '/placeholder.svg',
-        stock_quantity: 1
+        stock_quantity: 1,
+        // Add location data if available
+        latitude: productLocation?.latitude || null,
+        longitude: productLocation?.longitude || null,
+        address: productLocation?.address || null,
+        city: productLocation?.city || null,
+        region: productLocation?.region || null,
       };
 
       const { data: product, error } = await supabase
@@ -275,6 +301,55 @@ const Sell = () => {
                           )}
                         </div>
                       ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Item Location
+                </label>
+                <div className="space-y-3">
+                  {productLocation ? (
+                    <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                      <p className="text-sm text-green-600 font-medium">
+                        ✓ Location set
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        {productLocation.address || `${productLocation.city}, ${productLocation.region}`}
+                      </p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowLocationManager(!showLocationManager)}
+                        className="mt-2"
+                      >
+                        {showLocationManager ? 'Hide' : 'Change'} Location
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                      <p className="text-sm text-gray-600 mb-2">
+                        Set your location to help buyers find your item
+                      </p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setShowLocationManager(true)}
+                      >
+                        Set Location
+                      </Button>
+                    </div>
+                  )}
+                  
+                  {showLocationManager && (
+                    <div className="border border-gray-200 rounded-lg p-4">
+                      <LocationManager 
+                        onLocationUpdate={setProductLocation}
+                        hideHeader={true}
+                      />
                     </div>
                   )}
                 </div>

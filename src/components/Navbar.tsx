@@ -83,19 +83,8 @@ const Navbar = () => {
             </Button>
           </div>
 
-          {/* Search Bar - Centered with more space */}
-          <form onSubmit={handleSearch} className="hidden md:flex items-center flex-1 max-w-lg mx-8">
-            <div className="relative w-full">
-              <Input
-                type="text"
-                placeholder="Search the marketplace..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-4 py-2 w-full bg-secondary/30 border-accent/30 focus:border-primary/60 text-foreground placeholder:text-muted-foreground"
-              />
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-            </div>
-          </form>
+          {/* Search Bar - Moved below navigation */}
+          <div className="flex-1"></div>
 
           {/* Right side icons */}
           <div className="flex items-center space-x-4">

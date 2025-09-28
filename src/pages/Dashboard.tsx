@@ -3,7 +3,8 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
-import { Package, DollarSign, Eye, MessageCircle } from 'lucide-react';
+import { Package, DollarSign, Eye, MessageCircle, MapPin } from 'lucide-react';
+import LocationManager from '@/components/LocationManager';
 import { formatPrice } from '@/lib/utils';
 
 const Dashboard = () => {
@@ -44,7 +45,7 @@ const Dashboard = () => {
           ))}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <Card>
             <CardHeader>
               <CardTitle className="font-montserrat">Recent Listings</CardTitle>
@@ -68,6 +69,35 @@ const Dashboard = () => {
               <div className="text-center py-8 text-gray-500">
                 <DollarSign className="w-12 h-12 mx-auto mb-4 opacity-50" />
                 <p>No orders yet</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="font-montserrat flex items-center gap-2">
+                <MapPin className="w-5 h-5" />
+                Location Settings
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {profile?.latitude && profile?.longitude ? (
+                  <div className="text-sm">
+                    <p className="text-green-600 font-medium mb-2">✓ Location is set</p>
+                    <p className="text-gray-600 mb-3">
+                      {profile.address || `${profile.city}, ${profile.region}`}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="text-sm">
+                    <p className="text-orange-600 font-medium mb-2">⚠ Location not set</p>
+                    <p className="text-gray-600 mb-3">
+                      Set your location to help buyers find your items
+                    </p>
+                  </div>
+                )}
+                <LocationManager onLocationUpdate={() => window.location.reload()} />
               </div>
             </CardContent>
           </Card>

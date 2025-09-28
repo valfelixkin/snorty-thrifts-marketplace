@@ -6,6 +6,7 @@ import { usePaginatedProducts } from '@/hooks/usePaginatedProducts';
 import { useDebounced } from '@/hooks/useDebounced';
 import ProductFilters from '@/components/ProductFilters';
 import ProductGrid from '@/components/ProductGrid';
+import LocationSearch from '@/components/LocationSearch';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import {
   Pagination,
@@ -29,6 +30,7 @@ const Shop = () => {
   const [priceRange, setPriceRange] = useState<[number, number]>([100, 100000]);
   const [condition, setCondition] = useState('any');
   const [brand, setBrand] = useState('any');
+  const [locationFilter, setLocationFilter] = useState<any>({});
   const [currentPage, setCurrentPage] = useState(1);
 
   // Debounce search term to reduce API calls
@@ -157,22 +159,27 @@ const Shop = () => {
           </p>
         </div>
 
-        <ProductFilters
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-          selectedCategory={selectedCategory}
-          setSelectedCategory={setSelectedCategory}
-          sortBy={sortBy}
-          setSortBy={setSortBy}
-          priceRange={priceRange}
-          setPriceRange={setPriceRange}
-          condition={condition}
-          setCondition={setCondition}
-          brand={brand}
-          setBrand={setBrand}
-          categories={categories || []}
-          onClearFilters={handleClearFilters}
-        />
+        <div className="flex flex-col lg:flex-row gap-4 mb-6">
+          <div className="flex-1">
+            <ProductFilters
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+              selectedCategory={selectedCategory}
+              setSelectedCategory={setSelectedCategory}
+              sortBy={sortBy}
+              setSortBy={setSortBy}
+              priceRange={priceRange}
+              setPriceRange={setPriceRange}
+              condition={condition}
+              setCondition={setCondition}
+              brand={brand}
+              setBrand={setBrand}
+              categories={categories || []}
+              onClearFilters={handleClearFilters}
+            />
+          </div>
+          <LocationSearch onFilterChange={setLocationFilter} className="lg:w-auto" />
+        </div>
 
         {/* Results Summary */}
         <div className="flex items-center justify-between mb-6">

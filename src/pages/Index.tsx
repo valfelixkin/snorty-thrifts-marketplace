@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { Star, ShoppingBag, Upload, Search } from 'lucide-react';
 import { useProducts } from '@/hooks/useProducts';
 import { formatPrice } from '@/lib/utils';
@@ -49,9 +50,21 @@ const Index = () => {
                 <Button asChild size="lg" className="galaxy-border bg-transparent text-white hover:bg-accent/20">
                   <Link to="/sell">
                     <Upload className="mr-2 h-5 w-5" />
-                    Sell Your Treasures
+                 Sell Your Treasures
                   </Link>
                 </Button>
+              </div>
+              
+              {/* Search Bar - Below hero buttons */}
+              <div className="mt-8 max-w-2xl mx-auto">
+                <form className="relative">
+                  <Input
+                    type="text"
+                    placeholder="Search the cosmic marketplace..."
+                    className="pl-12 pr-4 py-4 w-full bg-white/10 border-white/20 focus:border-white/40 text-white placeholder:text-white/70 backdrop-blur-sm text-lg"
+                  />
+                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/70 w-5 h-5" />
+                </form>
               </div>
             </div>
           </div>
